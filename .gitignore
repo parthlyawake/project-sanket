@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Local Environment Secrets & Keys
+.env
+.env.local
+*.key
+project_sanket/backend/data/keys/
+
+# Logs & Databases
+logs/
+*.log
+*.db
+project_sanket/backend/data/*.db
+project_sanket/data/sanket.db
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Audio and WAV segments
+*.wav
+project_sanket/data/*.wav
+
+# Runtime Session Data & Generated Reports
+project_sanket/data/sessions/
+reports/
+*.pdf
+
+# IDE settings
+.vscode/
+.idea/
+.DS_Store

@@ -1,0 +1,94 @@
+services:
+  # 1. Relational Database Service (PostgreSQL 15)
+  postgres:
+    image: postgres:15-alpine
+    container_name: sanket_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: sanket
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sanket_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Object Storage Service (MinIO)
+  minio:
+    image: minio/minio
+    container_name: sanket_minio
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - sanket_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 3. FastAPI Python Backend Service
+  backend:
+    build:
+      context: ./project_sanket/backend
+      dockerfile: Dockerfile
+    container_name: sanket_backend
+    restart: always
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/sanket
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - HF_TOKEN=${HF_TOKEN}
+    volumes:
+      - model_cache:/app/models/hf_cache
+    networks:
+      - sanket_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  # 4. React Frontend Web Application (served via Nginx)
+  frontend:
+    build:
+      context: ./project_sanket/frontend
+      dockerfile: Dockerfile
+    container_name: sanket_frontend
+    restart: always
+    ports:
+      - "3001:3000"
+    networks:
+      - sanket_network
+    depends_on:
+      - backend
+
+networks:
+  sanket_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  minio_data:
+    driver: local
+  model_cache:
+    driver: local

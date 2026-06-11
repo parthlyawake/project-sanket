@@ -1,0 +1,121 @@
+{
+  "manifest_version": "1.0",
+  "generated_at": "2026-06-11T17:09:39.862331Z",
+  "total_sessions": 5,
+  "demographic_breakdown": {
+    "sex": {
+      "Male": 3,
+      "Female": 2
+    },
+    "age_bands": {
+      "18-30": 2,
+      "31-45": 2,
+      "46-60": 1
+    },
+    "languages": [
+      "Hindi",
+      "Tamil",
+      "Marathi",
+      "Hinglish",
+      "Bengali"
+    ],
+    "skin_tone_range": "Fitzpatrick III-V (simulated)"
+  },
+  "sessions": [
+    {
+      "session_id": "session_001",
+      "consent_record_hash": "4d3fe4dc9b484ff099339b3209ad1f5d5b2b4e2a51911db6797e23731beaa146",
+      "language": "Hindi",
+      "case_type": "Theft",
+      "subject_demographics": {
+        "sex": "Male",
+        "age": 35
+      },
+      "utterance_count": 18,
+      "contradictions_detected": 2,
+      "kpi_results": {
+        "latency_ms_p95": 72.49,
+        "ece_calibration": 0.038,
+        "demographic_parity_diff": 0.0,
+        "audit_log_verified": true
+      },
+      "report_path": "data/sessions/session_001/report.pdf"
+    },
+    {
+      "session_id": "session_002",
+      "consent_record_hash": "bb887018286c1777d14ad6ccde4609a6e02d31df2e4cee3fc42350a508af40a0",
+      "language": "Tamil",
+      "case_type": "Witness Statement",
+      "subject_demographics": {
+        "sex": "Female",
+        "age": 28
+      },
+      "utterance_count": 19,
+      "contradictions_detected": 2,
+      "kpi_results": {
+        "latency_ms_p95": 75.67,
+        "ece_calibration": 0.038,
+        "demographic_parity_diff": 0.0,
+        "audit_log_verified": true
+      },
+      "report_path": "data/sessions/session_002/report.pdf"
+    },
+    {
+      "session_id": "session_003",
+      "consent_record_hash": "0cd0d6c030bd92a6b8dfe17e8f1f31d88afc238494b757dbb330af21583aba3c",
+      "language": "Marathi",
+      "case_type": "Alibi Verification",
+      "subject_demographics": {
+        "sex": "Male",
+        "age": 45
+      },
+      "utterance_count": 18,
+      "contradictions_detected": 2,
+      "kpi_results": {
+        "latency_ms_p95": 73.94,
+        "ece_calibration": 0.038,
+        "demographic_parity_diff": 0.0,
+        "audit_log_verified": true
+      },
+      "report_path": "data/sessions/session_003/report.pdf"
+    },
+    {
+      "session_id": "session_004",
+      "consent_record_hash": "9e4f35ff05fe7d4deffdf70e0e9a72d541e8bca73c9707369ec6d47331d20825",
+      "language": "Hinglish",
+      "case_type": "Fraud",
+      "subject_demographics": {
+        "sex": "Female",
+        "age": 22
+      },
+      "utterance_count": 18,
+      "contradictions_detected": 2,
+      "kpi_results": {
+        "latency_ms_p95": 74.38,
+        "ece_calibration": 0.038,
+        "demographic_parity_diff": 0.0,
+        "audit_log_verified": true
+      },
+      "report_path": "data/sessions/session_004/report.pdf"
+    },
+    {
+      "session_id": "session_005",
+      "consent_record_hash": "eac406ffcafecd86df72e90bc0d8102f11cf548c578f7d74c3f0e31d6da764eb",
+      "language": "Bengali",
+      "case_type": "Property Dispute",
+      "subject_demographics": {
+        "sex": "Male",
+        "age": 52
+      },
+      "utterance_count": 18,
+      "contradictions_detected": 2,
+      "kpi_results": {
+        "latency_ms_p95": 75.48,
+        "ece_calibration": 0.038,
+        "demographic_parity_diff": 0.0,
+        "audit_log_verified": true
+      },
+      "report_path": "data/sessions/session_005/report.pdf"
+    }
+  ]
+}

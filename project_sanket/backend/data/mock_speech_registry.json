@@ -1,0 +1,1983 @@
+{
+  "session_001": [
+    {
+      "start_time": 0.0,
+      "end_time": 3.0,
+      "speaker_id": "Officer",
+      "utterance": "कृपया अपना नाम और पता दर्ज कराएं।",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.3,
+        "gaze_aversion": false,
+        "heart_rate": 70.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 4.0,
+      "end_time": 7.0,
+      "speaker_id": "Subject",
+      "utterance": "मेरा नाम रमेश कुमार है, मैं तिलक नगर में रहता हूँ।",
+      "language": "Hindi",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 205.5,
+        "jitter": 0.008,
+        "shimmer": 0.067,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.21,
+        "gaze_aversion": false,
+        "heart_rate": 71.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 8.0,
+      "end_time": 11.0,
+      "speaker_id": "Officer",
+      "utterance": "आप क्या काम करते हैं?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 110
+      },
+      "face_cues": {
+        "AU4": 0.18,
+        "gaze_aversion": false,
+        "heart_rate": 72.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 12.0,
+      "end_time": 15.0,
+      "speaker_id": "Subject",
+      "utterance": "मैं एक प्राइवेट बैंक में सुरक्षा गार्ड का काम करता हूँ।",
+      "language": "Hindi",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 194.3,
+        "jitter": 0.0038,
+        "shimmer": 0.089,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.3,
+        "gaze_aversion": false,
+        "heart_rate": 73.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 16.0,
+      "end_time": 19.0,
+      "speaker_id": "Officer",
+      "utterance": "क्या आप शिकायतकर्ता को पहले से जानते हैं?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.23,
+        "gaze_aversion": false,
+        "heart_rate": 74.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 20.0,
+      "end_time": 23.0,
+      "speaker_id": "Subject",
+      "utterance": "नहीं सर, मैं उन्हें नहीं जानता, वो मेरे लिए अजनबी हैं।",
+      "language": "Hindi",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 176.7,
+        "jitter": 0.0088,
+        "shimmer": 0.054,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.16,
+        "gaze_aversion": false,
+        "heart_rate": 70.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 24.0,
+      "end_time": 27.0,
+      "speaker_id": "Officer",
+      "utterance": "कल रात आप कहाँ थे? घटना के समय?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.29,
+        "gaze_aversion": false,
+        "heart_rate": 71.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 28.0,
+      "end_time": 31.0,
+      "speaker_id": "Subject",
+      "utterance": "मैं कल रात अपने घर पर था, परिवार के साथ सो रहा था।",
+      "language": "Hindi",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 202.5,
+        "jitter": 0.0069,
+        "shimmer": 0.078,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.25,
+        "gaze_aversion": false,
+        "heart_rate": 72.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 32.0,
+      "end_time": 35.0,
+      "speaker_id": "Officer",
+      "utterance": "घर पर किस समय पहुँचे थे आप?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.13,
+        "gaze_aversion": false,
+        "heart_rate": 73.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 36.0,
+      "end_time": 39.0,
+      "speaker_id": "Subject",
+      "utterance": "मैं कल शाम 7 बजे ही घर आ गया था और फिर बाहर नहीं निकला।",
+      "language": "Hindi",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 198.6,
+        "jitter": 0.0055,
+        "shimmer": 0.086,
+        "speech_rate": 110
+      },
+      "face_cues": {
+        "AU4": 0.28,
+        "gaze_aversion": false,
+        "heart_rate": 74.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 40.0,
+      "end_time": 43.0,
+      "speaker_id": "Officer",
+      "utterance": "क्या आपके पास इसका कोई गवाह है?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.27,
+        "gaze_aversion": false,
+        "heart_rate": 70.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 44.0,
+      "end_time": 47.0,
+      "speaker_id": "Subject",
+      "utterance": "मेरी पत्नी और बच्चे गवाह हैं, हम सब साथ ही थे।",
+      "language": "Hindi",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 176.0,
+        "jitter": 0.009,
+        "shimmer": 0.04,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.1,
+        "gaze_aversion": false,
+        "heart_rate": 71.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 48.0,
+      "end_time": 51.0,
+      "speaker_id": "Officer",
+      "utterance": "दुकान के सीसीटीवी फुटेज में आप दिख रहे हैं। क्या कहेंगे?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.27,
+        "gaze_aversion": false,
+        "heart_rate": 72.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 52.0,
+      "end_time": 55.0,
+      "speaker_id": "Subject",
+      "utterance": "जब मैं कल रात दुकान के पास टहल रहा था, तब शायद मैं वहां दिखा था।",
+      "language": "Hindi",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 198.7,
+        "jitter": 0.0055,
+        "shimmer": 0.085,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.58,
+        "gaze_aversion": true,
+        "heart_rate": 86.0
+      },
+      "contradiction_flag": true,
+      "contradiction_details": {
+        "contradicting_statement": "मैं कल रात अपने घर पर था, परिवार के साथ सो रहा था।",
+        "reasoning": "Location contradiction: Subject previously claimed to be at home, but later admitted walking near the shop.",
+        "confidence": 0.88,
+        "timestamp": "2026-06-11T17:08:24.484881"
+      }
+    },
+    {
+      "start_time": 56.0,
+      "end_time": 59.0,
+      "speaker_id": "Officer",
+      "utterance": "लेकिन आपने कहा था कि आप 7 बजे के बाद बाहर नहीं निकले?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.13,
+        "gaze_aversion": false,
+        "heart_rate": 74.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 60.0,
+      "end_time": 63.0,
+      "speaker_id": "Subject",
+      "utterance": "असल में मैं रात 9 बजे तक बाहर काम कर रहा था, इसलिए थोडा लेट हुआ।",
+      "language": "Hindi",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 202.4,
+        "jitter": 0.0069,
+        "shimmer": 0.078,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.63,
+        "gaze_aversion": true,
+        "heart_rate": 88.0
+      },
+      "contradiction_flag": true,
+      "contradiction_details": {
+        "contradicting_statement": "मैं कल शाम 7 बजे ही घर आ गया था और फिर बाहर नहीं निकला।",
+        "reasoning": "Timeline contradiction: Subject previously claimed to arrive home at 7 PM, but later admitted working until 9 PM.",
+        "confidence": 0.88,
+        "timestamp": "2026-06-11T17:08:24.484907"
+      }
+    },
+    {
+      "start_time": 64.0,
+      "end_time": 67.0,
+      "speaker_id": "Officer",
+      "utterance": "क्या आपने तिजोरी से पैसे निकाले थे?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.29,
+        "gaze_aversion": false,
+        "heart_rate": 71.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 68.0,
+      "end_time": 71.0,
+      "speaker_id": "Subject",
+      "utterance": "नहीं, मैंने कोई चोरी नहीं की, मैं निर्दोष हूँ।",
+      "language": "Hindi",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 176.6,
+        "jitter": 0.0088,
+        "shimmer": 0.054,
+        "speech_rate": 180
+      },
+      "face_cues": {
+        "AU4": 0.16,
+        "gaze_aversion": false,
+        "heart_rate": 72.0
+      },
+      "contradiction_flag": false
+    }
+  ],
+  "session_002": [
+    {
+      "start_time": 0.0,
+      "end_time": 3.0,
+      "speaker_id": "Officer",
+      "utterance": "உங்கள் பெயர் மற்றும் விவரங்களைச் சொல்லுங்கள்.",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 110
+      },
+      "face_cues": {
+        "AU4": 0.3,
+        "gaze_aversion": false,
+        "heart_rate": 74.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 4.0,
+      "end_time": 7.0,
+      "speaker_id": "Subject",
+      "utterance": "என் பெயர் சுசித்ரா, நான் ஒரு கணக்காளராக பணிபுரிகிறேன்.",
+      "language": "Tamil",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 265.5,
+        "jitter": 0.008,
+        "shimmer": 0.067,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.21,
+        "gaze_aversion": false,
+        "heart_rate": 75.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 8.0,
+      "end_time": 11.0,
+      "speaker_id": "Officer",
+      "utterance": "நீங்கள் சம்பவ இடத்தில் இருந்தீர்களா?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 180
+      },
+      "face_cues": {
+        "AU4": 0.18,
+        "gaze_aversion": false,
+        "heart_rate": 76.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 12.0,
+      "end_time": 15.0,
+      "speaker_id": "Subject",
+      "utterance": "ஆம், நான் அலுவலகத்தில் இருந்து திரும்பும்போது பார்த்தேன்.",
+      "language": "Tamil",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 254.3,
+        "jitter": 0.0038,
+        "shimmer": 0.089,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.3,
+        "gaze_aversion": false,
+        "heart_rate": 77.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 16.0,
+      "end_time": 19.0,
+      "speaker_id": "Officer",
+      "utterance": "சந்தேகத்திற்குரிய நபர் உங்களுக்குத் தெரியுமா?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 180
+      },
+      "face_cues": {
+        "AU4": 0.23,
+        "gaze_aversion": false,
+        "heart_rate": 78.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 20.0,
+      "end_time": 23.0,
+      "speaker_id": "Subject",
+      "utterance": "எனக்கு கார்த்திக்கை யார் என்றே தெரியாது, அவர் முற்றிலும் புதியவர்.",
+      "language": "Tamil",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 236.7,
+        "jitter": 0.0088,
+        "shimmer": 0.054,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.16,
+        "gaze_aversion": false,
+        "heart_rate": 74.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 24.0,
+      "end_time": 27.0,
+      "speaker_id": "Officer",
+      "utterance": "சம்பவம் நடந்த நேரம் அங்கு எத்தனை வாகனங்கள் இருந்தன?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.29,
+        "gaze_aversion": false,
+        "heart_rate": 75.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 28.0,
+      "end_time": 31.0,
+      "speaker_id": "Subject",
+      "utterance": "நான் அங்கு ஒரு காரை மட்டுமே பார்த்தேன், வேறு எதுவும் இல்லை.",
+      "language": "Tamil",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 262.5,
+        "jitter": 0.0069,
+        "shimmer": 0.078,
+        "speech_rate": 180
+      },
+      "face_cues": {
+        "AU4": 0.25,
+        "gaze_aversion": false,
+        "heart_rate": 76.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 32.0,
+      "end_time": 35.0,
+      "speaker_id": "Officer",
+      "utterance": "அந்த காரின் நிறம் என்ன?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 180
+      },
+      "face_cues": {
+        "AU4": 0.13,
+        "gaze_aversion": false,
+        "heart_rate": 77.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 36.0,
+      "end_time": 39.0,
+      "speaker_id": "Subject",
+      "utterance": "அது ஒரு சிவப்பு நிற கார் என்று நினைக்கிறேன்.",
+      "language": "Tamil",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 258.6,
+        "jitter": 0.0055,
+        "shimmer": 0.086,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.28,
+        "gaze_aversion": false,
+        "heart_rate": 78.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 40.0,
+      "end_time": 43.0,
+      "speaker_id": "Officer",
+      "utterance": "சம்பவம் எத்தனை மணிக்கு நடந்தது?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 180
+      },
+      "face_cues": {
+        "AU4": 0.27,
+        "gaze_aversion": false,
+        "heart_rate": 74.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 44.0,
+      "end_time": 47.0,
+      "speaker_id": "Subject",
+      "utterance": "இரவு சுமார் 8 மணி இருக்கும் என்று நினைக்கிறேன்.",
+      "language": "Tamil",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 236.0,
+        "jitter": 0.009,
+        "shimmer": 0.04,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.1,
+        "gaze_aversion": false,
+        "heart_rate": 75.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 48.0,
+      "end_time": 51.0,
+      "speaker_id": "Officer",
+      "utterance": "கார்த்திக் உங்கள் தொலைபேசி பட்டியலில் இருக்கிறார். எப்படி?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.27,
+        "gaze_aversion": false,
+        "heart_rate": 76.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 52.0,
+      "end_time": 55.0,
+      "speaker_id": "Subject",
+      "utterance": "உண்மையில் கார்த்திக் எனது அண்ணன் தான், நாங்கள் தினமும் பேசுவோம்.",
+      "language": "Tamil",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 258.7,
+        "jitter": 0.0055,
+        "shimmer": 0.085,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.58,
+        "gaze_aversion": true,
+        "heart_rate": 90.0
+      },
+      "contradiction_flag": true,
+      "contradiction_details": {
+        "contradicting_statement": "எனக்கு கார்த்திக்கை யார் என்றே தெரியாது, அவர் முற்றிலும் புதியவர்.",
+        "reasoning": "Relationship contradiction: Subject previously claimed not to know Karthik, but later admitted he is her brother.",
+        "confidence": 0.88,
+        "timestamp": "2026-06-11T17:08:24.484954"
+      }
+    },
+    {
+      "start_time": 56.0,
+      "end_time": 59.0,
+      "speaker_id": "Officer",
+      "utterance": "அப்படியானால் சம்பவ இடத்தில் அவரிடம் என்ன பேசினீர்கள்?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.13,
+        "gaze_aversion": false,
+        "heart_rate": 78.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 60.0,
+      "end_time": 63.0,
+      "speaker_id": "Subject",
+      "utterance": "நாங்கள் சாதாரணமாகத்தான் பேசிக்கொண்டிருந்தோம்.",
+      "language": "Tamil",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 262.4,
+        "jitter": 0.0069,
+        "shimmer": 0.078,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.25,
+        "gaze_aversion": false,
+        "heart_rate": 74.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 64.0,
+      "end_time": 67.0,
+      "speaker_id": "Officer",
+      "utterance": "வாகனங்கள் பற்றி மீண்டும் யோசித்துச் சொல்லுங்கள்.",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 110
+      },
+      "face_cues": {
+        "AU4": 0.29,
+        "gaze_aversion": false,
+        "heart_rate": 75.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 68.0,
+      "end_time": 71.0,
+      "speaker_id": "Subject",
+      "utterance": "அங்கு மூன்று கார்கள் நின்றுகொண்டிருந்தன, இப்போது நினைவுக்கு வருகிறது.",
+      "language": "Tamil",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 236.6,
+        "jitter": 0.0088,
+        "shimmer": 0.054,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.69,
+        "gaze_aversion": true,
+        "heart_rate": 94.0
+      },
+      "contradiction_flag": true,
+      "contradiction_details": {
+        "contradicting_statement": "நான் அங்கு ஒரு காரை மட்டுமே பார்த்தேன், வேறு எதுவும் இல்லை.",
+        "reasoning": "Quantity contradiction: Subject previously claimed to see only one car, but later admitted seeing three cars.",
+        "confidence": 0.88,
+        "timestamp": "2026-06-11T17:08:24.484965"
+      }
+    },
+    {
+      "start_time": 72.0,
+      "end_time": 75.0,
+      "speaker_id": "Officer",
+      "utterance": "விளக்கத்திற்கு நன்றி, இதை பதிவு செய்து கொள்கிறோம்.",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.23,
+        "gaze_aversion": false,
+        "heart_rate": 77.0
+      },
+      "contradiction_flag": false
+    }
+  ],
+  "session_003": [
+    {
+      "start_time": 0.0,
+      "end_time": 3.0,
+      "speaker_id": "Officer",
+      "utterance": "तुमचे नाव आणि पत्ता सांगा.",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 110
+      },
+      "face_cues": {
+        "AU4": 0.3,
+        "gaze_aversion": false,
+        "heart_rate": 72.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 4.0,
+      "end_time": 7.0,
+      "speaker_id": "Subject",
+      "utterance": "माझे नाव विजय सावंत आहे, मी पुण्यात राहतो.",
+      "language": "Marathi",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 205.5,
+        "jitter": 0.008,
+        "shimmer": 0.067,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.21,
+        "gaze_aversion": false,
+        "heart_rate": 73.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 8.0,
+      "end_time": 11.0,
+      "speaker_id": "Officer",
+      "utterance": "तुम्ही काल रात्री कुठे होता?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 110
+      },
+      "face_cues": {
+        "AU4": 0.18,
+        "gaze_aversion": false,
+        "heart_rate": 74.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 12.0,
+      "end_time": 15.0,
+      "speaker_id": "Subject",
+      "utterance": "मी काल रात्री मुंबईत नव्हतो, मी पुण्यात घरीच होतो.",
+      "language": "Marathi",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 194.3,
+        "jitter": 0.0038,
+        "shimmer": 0.089,
+        "speech_rate": 180
+      },
+      "face_cues": {
+        "AU4": 0.3,
+        "gaze_aversion": false,
+        "heart_rate": 75.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 16.0,
+      "end_time": 19.0,
+      "speaker_id": "Officer",
+      "utterance": "पुण्यात कोणासोबत होता?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.23,
+        "gaze_aversion": false,
+        "heart_rate": 76.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 20.0,
+      "end_time": 23.0,
+      "speaker_id": "Subject",
+      "utterance": "मी माझ्या कुटुंबासोबत होतो, आम्ही एकत्र जेवण केले.",
+      "language": "Marathi",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 176.7,
+        "jitter": 0.0088,
+        "shimmer": 0.054,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.16,
+        "gaze_aversion": false,
+        "heart_rate": 72.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 24.0,
+      "end_time": 27.0,
+      "speaker_id": "Officer",
+      "utterance": "तुमच्या खात्यात जमा झालेल्या पैशांबद्दल सांगा.",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.29,
+        "gaze_aversion": false,
+        "heart_rate": 73.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 28.0,
+      "end_time": 31.0,
+      "speaker_id": "Subject",
+      "utterance": "माझ्याकडे काल फक्त २ हजार रुपये होते, इतर काही नाही.",
+      "language": "Marathi",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 202.5,
+        "jitter": 0.0069,
+        "shimmer": 0.078,
+        "speech_rate": 110
+      },
+      "face_cues": {
+        "AU4": 0.25,
+        "gaze_aversion": false,
+        "heart_rate": 74.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 32.0,
+      "end_time": 35.0,
+      "speaker_id": "Officer",
+      "utterance": "पैसे कुठून आले हे माहित आहे का?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.13,
+        "gaze_aversion": false,
+        "heart_rate": 75.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 36.0,
+      "end_time": 39.0,
+      "speaker_id": "Subject",
+      "utterance": "नाही, मला याबद्दल काहीच कल्पना नाही.",
+      "language": "Marathi",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 198.6,
+        "jitter": 0.0055,
+        "shimmer": 0.086,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.28,
+        "gaze_aversion": false,
+        "heart_rate": 76.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 40.0,
+      "end_time": 43.0,
+      "speaker_id": "Officer",
+      "utterance": "काल रात्रीचे तुमचे रेकॉर्ड तपासावे लागेल.",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.27,
+        "gaze_aversion": false,
+        "heart_rate": 72.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 44.0,
+      "end_time": 47.0,
+      "speaker_id": "Subject",
+      "utterance": "हो, तुम्ही तपासू शकता, मी पूर्ण सहकार्य करेन.",
+      "language": "Marathi",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 176.0,
+        "jitter": 0.009,
+        "shimmer": 0.04,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.1,
+        "gaze_aversion": false,
+        "heart_rate": 73.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 48.0,
+      "end_time": 51.0,
+      "speaker_id": "Officer",
+      "utterance": "मुंबईतल्या हॉटेलच्या सीसीटीव्हीत तुम्ही दिसत आहात. काय सांगाल?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.27,
+        "gaze_aversion": false,
+        "heart_rate": 74.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 52.0,
+      "end_time": 55.0,
+      "speaker_id": "Subject",
+      "utterance": "मी काल रात्री गेटवे ऑफ इंडिया जवळ हॉटेलमध्ये थांबलो होतो, कामासाठी आलो होतो.",
+      "language": "Marathi",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 198.7,
+        "jitter": 0.0055,
+        "shimmer": 0.085,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.58,
+        "gaze_aversion": true,
+        "heart_rate": 88.0
+      },
+      "contradiction_flag": true,
+      "contradiction_details": {
+        "contradicting_statement": "मी काल रात्री मुंबईत नव्हतो, मी पुण्यात घरीच होतो.",
+        "reasoning": "Location contradiction: Subject previously claimed to not be in Mumbai, but later admitted being at a hotel near Gateway of India.",
+        "confidence": 0.88,
+        "timestamp": "2026-06-11T17:08:24.485001"
+      }
+    },
+    {
+      "start_time": 56.0,
+      "end_time": 59.0,
+      "speaker_id": "Officer",
+      "utterance": "आणि हॉटेलमध्ये तुम्ही काही रोकड जमा केली?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.13,
+        "gaze_aversion": false,
+        "heart_rate": 76.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 60.0,
+      "end_time": 63.0,
+      "speaker_id": "Subject",
+      "utterance": "मी हॉटेलच्या कपाटात ५० हजार रुपये ठेवले होते, ते माझेच पैसे होते.",
+      "language": "Marathi",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 202.4,
+        "jitter": 0.0069,
+        "shimmer": 0.078,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.63,
+        "gaze_aversion": true,
+        "heart_rate": 90.0
+      },
+      "contradiction_flag": true,
+      "contradiction_details": {
+        "contradicting_statement": "माझ्याकडे काल फक्त २ हजार रुपये होते, इतर काही नाही.",
+        "reasoning": "Quantity contradiction: Subject previously claimed to have only 2,000 rupees, but later admitted keeping 50,000 rupees in hotel cupboard.",
+        "confidence": 0.88,
+        "timestamp": "2026-06-11T17:08:24.485008"
+      }
+    },
+    {
+      "start_time": 64.0,
+      "end_time": 67.0,
+      "speaker_id": "Officer",
+      "utterance": "ही रक्कम तुम्ही आधी का लपवली?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.29,
+        "gaze_aversion": false,
+        "heart_rate": 73.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 68.0,
+      "end_time": 71.0,
+      "speaker_id": "Subject",
+      "utterance": "मी घाबरलो होतो सर, म्हणून खोटे बोललो.",
+      "language": "Marathi",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 176.6,
+        "jitter": 0.0088,
+        "shimmer": 0.054,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.16,
+        "gaze_aversion": false,
+        "heart_rate": 74.0
+      },
+      "contradiction_flag": false
+    }
+  ],
+  "session_004": [
+    {
+      "start_time": 0.0,
+      "end_time": 3.0,
+      "speaker_id": "Officer",
+      "utterance": "Please state your name and educational details.",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.3,
+        "gaze_aversion": false,
+        "heart_rate": 78.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 4.0,
+      "end_time": 7.0,
+      "speaker_id": "Subject",
+      "utterance": "मेरा नाम सानिया मिर्ज़ा है, और मैंने अभी MBA कम्पलीट किया है।",
+      "language": "Hinglish",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 285.5,
+        "jitter": 0.008,
+        "shimmer": 0.067,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.21,
+        "gaze_aversion": false,
+        "heart_rate": 79.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 8.0,
+      "end_time": 11.0,
+      "speaker_id": "Officer",
+      "utterance": "Do you know the manager of the finance firm?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 180
+      },
+      "face_cues": {
+        "AU4": 0.18,
+        "gaze_aversion": false,
+        "heart_rate": 80.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 12.0,
+      "end_time": 15.0,
+      "speaker_id": "Subject",
+      "utterance": "I don't know the manager closely, बस एक-दो बार ऑफिस में मिली हूँ।",
+      "language": "Hinglish",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 274.3,
+        "jitter": 0.0038,
+        "shimmer": 0.089,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.3,
+        "gaze_aversion": false,
+        "heart_rate": 81.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 16.0,
+      "end_time": 19.0,
+      "speaker_id": "Officer",
+      "utterance": "कितने समय से आप इस कंपनी में काम कर रही हैं?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.23,
+        "gaze_aversion": false,
+        "heart_rate": 82.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 20.0,
+      "end_time": 23.0,
+      "speaker_id": "Subject",
+      "utterance": "सिर्फ तीन महीने हुए हैं सर, I am just an intern.",
+      "language": "Hinglish",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 256.7,
+        "jitter": 0.0088,
+        "shimmer": 0.054,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.16,
+        "gaze_aversion": false,
+        "heart_rate": 78.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 24.0,
+      "end_time": 27.0,
+      "speaker_id": "Officer",
+      "utterance": "आपको फ्रॉड ट्रांजैक्शन की ईमेल कब मिली थी?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.29,
+        "gaze_aversion": false,
+        "heart_rate": 79.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 28.0,
+      "end_time": 31.0,
+      "speaker_id": "Subject",
+      "utterance": "I received the email at 2 PM कल दोपहर को, तभी मुझे पता चला।",
+      "language": "Hinglish",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 282.5,
+        "jitter": 0.0069,
+        "shimmer": 0.078,
+        "speech_rate": 180
+      },
+      "face_cues": {
+        "AU4": 0.25,
+        "gaze_aversion": false,
+        "heart_rate": 80.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 32.0,
+      "end_time": 35.0,
+      "speaker_id": "Officer",
+      "utterance": "ईमेल मिलने के बाद आपने क्या किया?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.13,
+        "gaze_aversion": false,
+        "heart_rate": 81.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 36.0,
+      "end_time": 39.0,
+      "speaker_id": "Subject",
+      "utterance": "मैंने तुरंत अपने सीनियर को इन्फॉर्म किया था।",
+      "language": "Hinglish",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 278.6,
+        "jitter": 0.0055,
+        "shimmer": 0.086,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.28,
+        "gaze_aversion": false,
+        "heart_rate": 82.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 40.0,
+      "end_time": 43.0,
+      "speaker_id": "Officer",
+      "utterance": "क्या आपने ट्रांजैक्शन को अप्रूव किया था?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.27,
+        "gaze_aversion": false,
+        "heart_rate": 78.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 44.0,
+      "end_time": 47.0,
+      "speaker_id": "Subject",
+      "utterance": "नहीं सर, I did not approve anything myself.",
+      "language": "Hinglish",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 256.0,
+        "jitter": 0.009,
+        "shimmer": 0.04,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.1,
+        "gaze_aversion": false,
+        "heart_rate": 79.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 48.0,
+      "end_time": 51.0,
+      "speaker_id": "Officer",
+      "utterance": "मैनेजर के साथ आपकी चैट हिस्ट्री मिली है। क्या कहेंगी?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 110
+      },
+      "face_cues": {
+        "AU4": 0.27,
+        "gaze_aversion": false,
+        "heart_rate": 80.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 52.0,
+      "end_time": 55.0,
+      "speaker_id": "Subject",
+      "utterance": "Actually, manager is my close family friend, इसलिए चैट पर बात होती थी।",
+      "language": "Hinglish",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 278.7,
+        "jitter": 0.0055,
+        "shimmer": 0.085,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.58,
+        "gaze_aversion": true,
+        "heart_rate": 94.0
+      },
+      "contradiction_flag": true,
+      "contradiction_details": {
+        "contradicting_statement": "I don't know the manager closely, बस एक-दो बार ऑफिस में मिली हूँ।",
+        "reasoning": "Relationship contradiction: Subject previously claimed she didn't know the manager closely, but later admitted he is a close family friend.",
+        "confidence": 0.88,
+        "timestamp": "2026-06-11T17:08:24.485048"
+      }
+    },
+    {
+      "start_time": 56.0,
+      "end_time": 59.0,
+      "speaker_id": "Officer",
+      "utterance": "और ईमेल के टाइमस्टैम्प कुछ और दिखा रहे हैं।",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 180
+      },
+      "face_cues": {
+        "AU4": 0.13,
+        "gaze_aversion": false,
+        "heart_rate": 82.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 60.0,
+      "end_time": 63.0,
+      "speaker_id": "Subject",
+      "utterance": "हां, I got it early morning around 8 AM, लेकिन मैं दोपहर में ऑफिस आई तब देखा।",
+      "language": "Hinglish",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 282.4,
+        "jitter": 0.0069,
+        "shimmer": 0.078,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.63,
+        "gaze_aversion": true,
+        "heart_rate": 96.0
+      },
+      "contradiction_flag": true,
+      "contradiction_details": {
+        "contradicting_statement": "I received the email at 2 PM कल दोपहर को, तभी मुझे पता चला।",
+        "reasoning": "Timeline contradiction: Subject previously claimed she received the email at 2 PM, but later admitted getting it at 8 AM.",
+        "confidence": 0.88,
+        "timestamp": "2026-06-11T17:08:24.485055"
+      }
+    },
+    {
+      "start_time": 64.0,
+      "end_time": 67.0,
+      "speaker_id": "Officer",
+      "utterance": "क्या आपने मैनेजर के कहने पर फाइल ट्रांसफर की थी?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 110
+      },
+      "face_cues": {
+        "AU4": 0.29,
+        "gaze_aversion": false,
+        "heart_rate": 79.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 68.0,
+      "end_time": 71.0,
+      "speaker_id": "Subject",
+      "utterance": "हां, उन्होंने जैसा बोला मैंने वैसे ही किया, मुझे फ्रॉड के बारे में नहीं पता था।",
+      "language": "Hinglish",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 256.6,
+        "jitter": 0.0088,
+        "shimmer": 0.054,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.16,
+        "gaze_aversion": false,
+        "heart_rate": 80.0
+      },
+      "contradiction_flag": false
+    }
+  ],
+  "session_005": [
+    {
+      "start_time": 0.0,
+      "end_time": 3.0,
+      "speaker_id": "Officer",
+      "utterance": "দয়া করে আপনার নাম এবং বয়স বলুন।",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.3,
+        "gaze_aversion": false,
+        "heart_rate": 75.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 4.0,
+      "end_time": 7.0,
+      "speaker_id": "Subject",
+      "utterance": "আমার নাম অমল বোস, আমার বয়স ৫২ বছর।",
+      "language": "Bengali",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 205.5,
+        "jitter": 0.008,
+        "shimmer": 0.067,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.21,
+        "gaze_aversion": false,
+        "heart_rate": 76.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 8.0,
+      "end_time": 11.0,
+      "speaker_id": "Officer",
+      "utterance": "বিতর্কিত জমিটি কার নামে নথিভুক্ত আছে?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 127
+      },
+      "face_cues": {
+        "AU4": 0.18,
+        "gaze_aversion": false,
+        "heart_rate": 77.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 12.0,
+      "end_time": 15.0,
+      "speaker_id": "Subject",
+      "utterance": "এটি আমাদের পৈতৃক সম্পত্তি, আমার বাবার নামে ছিল।",
+      "language": "Bengali",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 194.3,
+        "jitter": 0.0038,
+        "shimmer": 0.089,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.3,
+        "gaze_aversion": false,
+        "heart_rate": 78.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 16.0,
+      "end_time": 19.0,
+      "speaker_id": "Officer",
+      "utterance": "বিবাদের সময় আপনি কি সেখানে উপস্থিত ছিলেন?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.23,
+        "gaze_aversion": false,
+        "heart_rate": 79.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 20.0,
+      "end_time": 23.0,
+      "speaker_id": "Subject",
+      "utterance": "আমি কাল রাতে জমিতে যাইনি, আমি বাড়িতে ঘুমাচ্ছিলাম।",
+      "language": "Bengali",
+      "confidence": 0.95,
+      "topic": "Background & Identification",
+      "acoustic_cues": {
+        "pitch": 176.7,
+        "jitter": 0.0088,
+        "shimmer": 0.054,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.16,
+        "gaze_aversion": false,
+        "heart_rate": 75.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 24.0,
+      "end_time": 27.0,
+      "speaker_id": "Officer",
+      "utterance": "জমিটির বিক্রয় মূল্য কত নির্ধারণ করা হয়েছিল?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.29,
+        "gaze_aversion": false,
+        "heart_rate": 76.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 28.0,
+      "end_time": 31.0,
+      "speaker_id": "Subject",
+      "utterance": "জমির দাম ছিল মাত্র ১০ লাখ টাকা, এর বেশি নয়।",
+      "language": "Bengali",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 202.5,
+        "jitter": 0.0069,
+        "shimmer": 0.078,
+        "speech_rate": 110
+      },
+      "face_cues": {
+        "AU4": 0.25,
+        "gaze_aversion": false,
+        "heart_rate": 77.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 32.0,
+      "end_time": 35.0,
+      "speaker_id": "Officer",
+      "utterance": "অন্য পক্ষ কত দাবি করছে?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 110
+      },
+      "face_cues": {
+        "AU4": 0.13,
+        "gaze_aversion": false,
+        "heart_rate": 78.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 36.0,
+      "end_time": 39.0,
+      "speaker_id": "Subject",
+      "utterance": "তারা অনেক বেশি দাবি করছে যা আমাদের পক্ষে দেওয়া অসম্ভব।",
+      "language": "Bengali",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 198.6,
+        "jitter": 0.0055,
+        "shimmer": 0.086,
+        "speech_rate": 110
+      },
+      "face_cues": {
+        "AU4": 0.28,
+        "gaze_aversion": false,
+        "heart_rate": 79.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 40.0,
+      "end_time": 43.0,
+      "speaker_id": "Officer",
+      "utterance": "আপনার কাছে কি বিক্রয় চুক্তির নথি আছে?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.27,
+        "gaze_aversion": false,
+        "heart_rate": 75.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 44.0,
+      "end_time": 47.0,
+      "speaker_id": "Subject",
+      "utterance": "হ্যাঁ, আমার কাছে সব রসিদ ও কাগজপত্র আছে।",
+      "language": "Bengali",
+      "confidence": 0.95,
+      "topic": "Timeline of Events",
+      "acoustic_cues": {
+        "pitch": 176.0,
+        "jitter": 0.009,
+        "shimmer": 0.04,
+        "speech_rate": 162
+      },
+      "face_cues": {
+        "AU4": 0.1,
+        "gaze_aversion": false,
+        "heart_rate": 76.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 48.0,
+      "end_time": 51.0,
+      "speaker_id": "Officer",
+      "utterance": "কাল রাতের মোবাইল লোকেশন আপনাকে জমিতেই দেখাচ্ছে।",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 145
+      },
+      "face_cues": {
+        "AU4": 0.27,
+        "gaze_aversion": false,
+        "heart_rate": 77.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 52.0,
+      "end_time": 55.0,
+      "speaker_id": "Subject",
+      "utterance": "জমির সীমানায় দাঁড়িয়ে আমি বিবাদ দেখছিলাম, কিন্তু আমি মারামারিতে জড়াইনি।",
+      "language": "Bengali",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 198.7,
+        "jitter": 0.0055,
+        "shimmer": 0.085,
+        "speech_rate": 110
+      },
+      "face_cues": {
+        "AU4": 0.58,
+        "gaze_aversion": true,
+        "heart_rate": 91.0
+      },
+      "contradiction_flag": true,
+      "contradiction_details": {
+        "contradicting_statement": "আমি কাল রাতে জমিতে যাইনি, আমি বাড়িতে ঘুমাচ্ছিলাম।",
+        "reasoning": "Location contradiction: Subject previously claimed he didn't go to the land last night, but later admitted standing at the boundary watching the dispute.",
+        "confidence": 0.88,
+        "timestamp": "2026-06-11T17:08:24.485088"
+      }
+    },
+    {
+      "start_time": 56.0,
+      "end_time": 59.0,
+      "speaker_id": "Officer",
+      "utterance": "আর ব্যাংকের নথিতে ৫০ লাখ টাকার চুক্তি দেখা যাচ্ছে। কেন?",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 110
+      },
+      "face_cues": {
+        "AU4": 0.13,
+        "gaze_aversion": false,
+        "heart_rate": 79.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 60.0,
+      "end_time": 63.0,
+      "speaker_id": "Subject",
+      "utterance": "আসলে আমি ৫০ লাখ টাকায় চুক্তি করেছি, বাকি টাকা ট্যাক্স বাঁচানোর জন্য লুকানো ছিল।",
+      "language": "Bengali",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 202.4,
+        "jitter": 0.0069,
+        "shimmer": 0.078,
+        "speech_rate": 180
+      },
+      "face_cues": {
+        "AU4": 0.63,
+        "gaze_aversion": true,
+        "heart_rate": 93.0
+      },
+      "contradiction_flag": true,
+      "contradiction_details": {
+        "contradicting_statement": "জমির দাম ছিল মাত্র ১০ লাখ টাকা, এর বেশি নয়।",
+        "reasoning": "Quantity contradiction: Subject previously claimed the land price was 10 lakh rupees, but later admitted making a contract for 50 lakh rupees.",
+        "confidence": 0.88,
+        "timestamp": "2026-06-11T17:08:24.485094"
+      }
+    },
+    {
+      "start_time": 64.0,
+      "end_time": 67.0,
+      "speaker_id": "Officer",
+      "utterance": "আইন ভাঙার জন্য আপনার বিরুদ্ধে ব্যবস্থা নেওয়া হতে পারে।",
+      "language": "English",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 220.0,
+        "jitter": 0.004,
+        "shimmer": 0.045,
+        "speech_rate": 180
+      },
+      "face_cues": {
+        "AU4": 0.29,
+        "gaze_aversion": false,
+        "heart_rate": 76.0
+      },
+      "contradiction_flag": false
+    },
+    {
+      "start_time": 68.0,
+      "end_time": 71.0,
+      "speaker_id": "Subject",
+      "utterance": "আমি দুঃখিত স্যার, আমি সত্য প্রকাশ করলাম কারণ আমি আর লুকিয়ে রাখতে পারছিলাম না।",
+      "language": "Bengali",
+      "confidence": 0.95,
+      "topic": "Alibi & Location",
+      "acoustic_cues": {
+        "pitch": 176.6,
+        "jitter": 0.0088,
+        "shimmer": 0.054,
+        "speech_rate": 180
+      },
+      "face_cues": {
+        "AU4": 0.16,
+        "gaze_aversion": false,
+        "heart_rate": 77.0
+      },
+      "contradiction_flag": false
+    }
+  ]
+}
