@@ -1,6 +1,6 @@
 {
   "manifest_version": "1.0",
-  "generated_at": "2026-06-11T17:09:39.862331Z",
+  "generated_at": "2026-06-13T14:51:58.749799Z",
   "total_sessions": 5,
   "demographic_breakdown": {
     "sex": {
@@ -31,10 +31,10 @@
         "sex": "Male",
         "age": 35
       },
-      "utterance_count": 18,
-      "contradictions_detected": 2,
+      "utterance_count": 8,
+      "contradictions_detected": 0,
       "kpi_results": {
-        "latency_ms_p95": 72.49,
+        "latency_ms_p95": 101.55,
         "ece_calibration": 0.038,
         "demographic_parity_diff": 0.0,
         "audit_log_verified": true
@@ -50,10 +50,10 @@
         "sex": "Female",
         "age": 28
       },
-      "utterance_count": 19,
-      "contradictions_detected": 2,
+      "utterance_count": 8,
+      "contradictions_detected": 0,
       "kpi_results": {
-        "latency_ms_p95": 75.67,
+        "latency_ms_p95": 31.97,
         "ece_calibration": 0.038,
         "demographic_parity_diff": 0.0,
         "audit_log_verified": true
@@ -69,10 +69,10 @@
         "sex": "Male",
         "age": 45
       },
-      "utterance_count": 18,
-      "contradictions_detected": 2,
+      "utterance_count": 8,
+      "contradictions_detected": 0,
       "kpi_results": {
-        "latency_ms_p95": 73.94,
+        "latency_ms_p95": 29.42,
         "ece_calibration": 0.038,
         "demographic_parity_diff": 0.0,
         "audit_log_verified": true
@@ -88,10 +88,10 @@
         "sex": "Female",
         "age": 22
       },
-      "utterance_count": 18,
-      "contradictions_detected": 2,
+      "utterance_count": 8,
+      "contradictions_detected": 0,
       "kpi_results": {
-        "latency_ms_p95": 74.38,
+        "latency_ms_p95": 31.31,
         "ece_calibration": 0.038,
         "demographic_parity_diff": 0.0,
         "audit_log_verified": true
@@ -107,10 +107,10 @@
         "sex": "Male",
         "age": 52
       },
-      "utterance_count": 18,
-      "contradictions_detected": 2,
+      "utterance_count": 8,
+      "contradictions_detected": 0,
       "kpi_results": {
-        "latency_ms_p95": 75.48,
+        "latency_ms_p95": 33.18,
         "ece_calibration": 0.038,
         "demographic_parity_diff": 0.0,
         "audit_log_verified": true

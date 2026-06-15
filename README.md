@@ -123,6 +123,20 @@ docker-compose exec backend python -m unittest test/test_kpis.py
 
 ---
 
+## 🔧 Recent Cue Processing & Validation Enhancements
+
+SANKET has been updated with several critical refinements to improve the accuracy and robustness of behavior analysis pipelines:
+
+1. **Linguistic Contradiction Optimization (`contradiction.py`)**:
+   - **Utterance Length Gate**: Added a minimum length check of 5 words per statement to avoid noise/falses on short utterances (e.g., "I work", "hey my name is Parth").
+   - **Semantic Similarity Threshold**: Elevated the LaBSE scaled similarity check threshold to `scaled_sim <= 0.7` to ensure that only strongly semantically opposite statements trigger flags (rather than mere topic shifts).
+   - **Temporal Context Sensitivity**: Added regex-based temporal token extraction (`morning`, `noon`, specific times like `10 am`, weekdays, months) to verify if compared statements reference different, non-overlapping time contexts before running contradiction checks.
+
+2. **rPPG CHROM Noise Filtering (`ppg.py`)**:
+   - **Target Frequency Band**: Re-centered the chrominance bandpass filter to look specifically at the `0.92` Hz to `1.67` Hz range (equivalent to 55 to 100 BPM), filtering out low-frequency noise (e.g. 45 BPM) and high-frequency motion artifacts.
+
+---
+
 ## 💻 Manual Developer Setup (Non-Docker)
 
 ### 1. Backend Server Setup

@@ -13,8 +13,18 @@ except (ImportError, ValueError):
 REAL_SMILE_AVAILABLE = False
 try:
     import opensmile
+    print("Testing openSMILE initialization...")
+    # Initialize openSMILE extractor to test
+    test_smile = opensmile.Smile(
+        feature_set=opensmile.FeatureSet.eGeMAPS,
+        feature_level=opensmile.FeatureLevel.Functionals,
+    )
     REAL_SMILE_AVAILABLE = True
-except ImportError:
+    print("Real openSMILE initialized successfully.")
+except Exception as e:
+    print(f"openSMILE initialization failed: {e}")
+    import traceback
+    traceback.print_exc()
     REAL_SMILE_AVAILABLE = False
 
 def estimate_pitch_numpy(audio_data: np.ndarray, sample_rate: int) -> tuple:
@@ -140,7 +150,7 @@ def extract_features(wav_bytes: bytes, session_id: str, elapsed_seconds: float =
             # For simplicity, extract directly if available, or approximate
             f0_hz = float(features_df['F0raw_sma3nz_amean'].iloc[0]) if 'F0raw_sma3nz_amean' in features_df.columns else 120.0
             jitter = float(features_df['jitterLocal_sma3nz_amean'].iloc[0])
-            shimmer = float(features_df['shimmerLocal_sma3nz_amean'].iloc[0])
+            shimmer = float(features_df['shimmerLocaldB_sma3nz_amean'].iloc[0])
             
             log_audit_event(
                 event_type="AUDIO_ACOUSTIC_INFERENCE",

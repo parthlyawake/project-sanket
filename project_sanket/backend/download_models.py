@@ -7,10 +7,15 @@ def main():
     print(f"--- PRE-DOWNLOADING MODELS FOR OFFLINE USE ---")
     print(f"Selected Whisper Model: {model_name}")
     
-    # 1. Download Whisper
-    print("Downloading Whisper tokenizer and model...")
+    # 1. Download Whisper (default configured model)
+    print(f"Downloading Whisper tokenizer and model ({model_name})...")
     AutoTokenizer.from_pretrained(model_name)
     AutoModel.from_pretrained(model_name)
+    
+    # 1b. Download Whisper (tiny)
+    print("Downloading Whisper tokenizer and model (openai/whisper-tiny)...")
+    AutoTokenizer.from_pretrained('openai/whisper-tiny')
+    AutoModel.from_pretrained('openai/whisper-tiny')
     
     # 2. Download MuRIL
     print("Downloading MuRIL tokenizer and model...")

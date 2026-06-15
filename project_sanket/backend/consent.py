@@ -7,7 +7,7 @@ def get_session_model(db: Session, session_id: str) -> SessionModel:
     """Helper to fetch session from DB."""
     return db.query(SessionModel).filter(SessionModel.id == session_id).first()
 
-def set_consent(session_id: str, status: str, demographics_volunteered: dict = None, is_vulnerable: bool = False, demo_mode: bool = False) -> bool:
+def set_consent(session_id: str, status: str, demographics_volunteered: dict = None, is_vulnerable: bool = False, demo_mode: bool = False, is_live_session: bool = True) -> bool:
     """
     Sets or updates the consent status for an interview session.
     Fulfills DPDP Act 2023 requirements for informed and explicit consent.
@@ -22,7 +22,8 @@ def set_consent(session_id: str, status: str, demographics_volunteered: dict = N
                 consent_status=status,
                 demographics_volunteered=demographics_volunteered,
                 is_vulnerable=is_vulnerable,
-                demo_mode=demo_mode
+                demo_mode=demo_mode,
+                is_live_session=is_live_session
             )
             db.add(session)
         else:
@@ -31,6 +32,7 @@ def set_consent(session_id: str, status: str, demographics_volunteered: dict = N
                 session.demographics_volunteered = demographics_volunteered
             session.is_vulnerable = is_vulnerable
             session.demo_mode = demo_mode
+            session.is_live_session = is_live_session
         db.commit()
         return True
     except Exception as e:

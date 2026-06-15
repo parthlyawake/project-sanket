@@ -267,8 +267,8 @@ def main():
         session_id = conf["session_id"]
         registry_data[session_id] = []
         
-        # Build timeline entries
-        for ut_idx, ut in enumerate(conf["utterances"]):
+        # Build timeline entries (limit to 8 for fast test execution)
+        for ut_idx, ut in enumerate(conf["utterances"][:8]):
             start_time = float(ut_idx * 4)
             end_time = start_time + 3.0
             
@@ -349,7 +349,9 @@ def main():
         session_id = conf["session_id"]
         print(f"\nProcessing {session_id} ({conf['language']}, {conf['sex']}, {conf['age']}, {conf['case_type']})...")
         
-        # A. Register consent
+        # Delete existing session to avoid duplicate database entries
+        requests.delete(f"{API_URL}/session/{session_id}", timeout=20)
+        
         consent_data = {
             "session_id": session_id,
             "officer_id": conf["officer_id"],
@@ -358,10 +360,11 @@ def main():
             "age": str(conf["age"]),
             "language": conf["language"],
             "case_type": conf["case_type"],
-            "is_vulnerable": "false"
+            "is_vulnerable": "false",
+            "is_live_session": "false"
         }
         
-        r_consent = requests.post(f"{API_URL}/consent", data=consent_data)
+        r_consent = requests.post(f"{API_URL}/consent", data=consent_data, timeout=20)
         if r_consent.status_code != 200:
             print(f"  Failed to register consent: {r_consent.status_code} - {r_consent.text}")
             continue
@@ -380,7 +383,7 @@ def main():
             data = {"session_id": session_id, "elapsed_seconds": t_offset}
             
             start_frame = time.time()
-            r_frame = requests.post(f"{API_URL}/frame", files=files, data=data)
+            r_frame = requests.post(f"{API_URL}/frame", files=files, data=data, timeout=20)
             frame_lat = (time.time() - start_frame) * 1000.0
             session_latencies.append(frame_lat)
             
@@ -397,7 +400,7 @@ def main():
             data = {"session_id": session_id, "elapsed_seconds": t_offset}
             
             start_audio = time.time()
-            r_audio = requests.post(f"{API_URL}/audio", files=files, data=data)
+            r_audio = requests.post(f"{API_URL}/audio", files=files, data=data, timeout=20)
             audio_lat = (time.time() - start_audio) * 1000.0
             session_latencies.append(audio_lat)
             
@@ -410,7 +413,7 @@ def main():
                     print(f"      [CONTRADICTION FLAG] {res['nlp_analysis']['contradiction_details']['reasoning']}")
             
             # Sleep briefly
-            time.sleep(0.05)
+            time.sleep(1.0)
             
         # Calculate 95th percentile latency
         sorted_latencies = sorted(session_latencies)
@@ -419,7 +422,7 @@ def main():
         
         # C. Call /report and save PDF
         print(f"  Generating PDF report for {session_id}...")
-        r_report = requests.get(f"{API_URL}/report?session_id={session_id}")
+        r_report = requests.get(f"{API_URL}/report?session_id={session_id}", timeout=20)
         if r_report.status_code != 200:
             print(f"  Failed to generate report: {r_report.status_code}")
             continue

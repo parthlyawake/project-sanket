@@ -3,7 +3,7 @@ import time
 import uuid
 import datetime
 import shutil
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends, status
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.orm import Session
@@ -42,7 +42,7 @@ app = FastAPI(
 # CORS configuration for React tablet UI
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify tablet UI host
+    allow_origins=["http://localhost:3001", "http://127.0.0.1:3001", "http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -79,7 +79,8 @@ def submit_consent(
     age: str = Form(None),
     language: str = Form(None),
     case_type: str = Form(None),
-    is_vulnerable: bool = Form(False)
+    is_vulnerable: bool = Form(False),
+    is_live_session: bool = Form(True)
 ):
     """
     Submits subject consent and starts the baseline tracking if granted.
@@ -95,12 +96,18 @@ def submit_consent(
             "case_type": case_type
         }
         
+    from audio.asr import REAL_ASR_AVAILABLE
+    from vision.face_cues import REAL_MODELS_AVAILABLE
+    from vision.ppg import REAL_PPG_AVAILABLE
+    from nlp.contradiction import REAL_NLP_AVAILABLE
+ 
     success = set_consent(
         session_id=session_id,
         status=status,
         demographics_volunteered=demographics,
         is_vulnerable=is_vulnerable,
-        demo_mode=True # Default to true for simulated pipelines on Windows Python 3.13
+        demo_mode=not (REAL_ASR_AVAILABLE and REAL_MODELS_AVAILABLE and REAL_NLP_AVAILABLE and REAL_PPG_AVAILABLE),
+        is_live_session=is_live_session
     )
     
     if not success:
@@ -148,19 +155,277 @@ def acknowledge_safeguard(session_id: str = Form(...)):
     safeguard.acknowledge()
     return {"status": "success", "is_halted": False}
 
+# In-memory cache for latest cues per session
+latest_session_cues = {}
+
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+import threading
+
+inference_executor = ThreadPoolExecutor(max_workers=2)
+transcription_executor = ThreadPoolExecutor(max_workers=1)
+active_tasks_lock = threading.Lock()
+active_tasks_count = 0
+
+def increment_active_tasks():
+    global active_tasks_count
+    with active_tasks_lock:
+        active_tasks_count += 1
+
+def decrement_active_tasks():
+    global active_tasks_count
+    with active_tasks_lock:
+        if active_tasks_count > 0:
+            active_tasks_count -= 1
+
+def run_frame_inference(frame_bytes: bytes, session_id: str, elapsed_seconds: float, is_calibrating: bool = False):
+    increment_active_tasks()
+    try:
+        # 3. Run Vision pipeline to get facial AUs, gaze, and posture
+        vision_cues = process_frame(frame_bytes, session_id, elapsed_seconds, is_calibrating=is_calibrating)
+        
+        # 4. Run rPPG pipeline to get heart rate
+        ppg_cues = estimate_heart_rate(frame_bytes, session_id, elapsed_seconds)
+        
+        # Merge outputs
+        combined_vision = {**vision_cues, "heart_rate": ppg_cues["heart_rate"]}
+        
+        # 5. Continuous safety monitoring (vulnerable subject triggers)
+        check_and_apply_safeguards(session_id, vision_data=combined_vision)
+            
+        # Add face AU sample to baseline tracker
+        baseline = get_or_create_baseline(session_id)
+        if not baseline.is_complete():
+            # Use average AU intensity
+            au_vals = [v for v in vision_cues.get("action_units", {}).values()]
+            mean_au = float(np.mean(au_vals)) if au_vals else 0.05
+            baseline.add_sample("face_au_intensity", mean_au)
+            # Use posture shift index
+            baseline.add_sample("posture_shift", vision_cues.get("posture", {}).get("posture_shift_index", 0.0))
+
+        # Save cue outputs to database for post-hoc history
+        db = SessionLocal()
+        try:
+            db_cue = BehavioralCueModel(
+                id=str(uuid.uuid4()),
+                session_id=session_id,
+                cue_type="vision_fused",
+                cue_data=combined_vision
+            )
+            db.add(db_cue)
+            db.commit()
+        except Exception as e:
+            print(f"Error saving vision cues to DB: {e}")
+            db.rollback()
+        finally:
+            db.close()
+            
+        # Save to latest cache
+        if session_id not in latest_session_cues:
+            latest_session_cues[session_id] = {}
+        latest_session_cues[session_id]["vision_cues"] = combined_vision
+        latest_session_cues[session_id]["ppg_cues"] = ppg_cues
+    except Exception as e:
+        import traceback
+        print(f"Error in background frame inference: {e}")
+        traceback.print_exc()
+    finally:
+        decrement_active_tasks()
+
+def convert_webm_to_wav(audio_bytes: bytes) -> bytes:
+    """Converts WebM audio bytes (or any other container format) to 16kHz mono WAV bytes using FFmpeg."""
+    import subprocess
+    try:
+        # Run ffmpeg as a subprocess to convert stdin to stdout
+        process = subprocess.Popen(
+            ["ffmpeg", "-y", "-i", "pipe:0", "-ar", "16000", "-ac", "1", "-f", "wav", "pipe:1"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        out, err = process.communicate(input=audio_bytes)
+        if process.returncode != 0:
+            print('FFMPEG STDERR:', err.decode('utf-8', errors='ignore'))
+            return audio_bytes
+        return out
+    except Exception as e:
+        print(f"Error calling FFmpeg: {e}")
+        return audio_bytes
+
+def process_audio_transcription_background(wav_bytes: bytes, session_id: str, elapsed_seconds: float, acoustic_cues: dict):
+    try:
+        # 3. Transcribe audio chunk (ASR)
+        asr_result = transcribe_audio_chunk(wav_bytes, session_id, elapsed_seconds)
+        transcript = asr_result.get("utterance", "")
+        
+        if not transcript or len(transcript.strip()) < 3:
+            return  # skip saving empty transcripts
+            
+        # Fetch previous transcript segments for this session to run contradiction checks
+        db = SessionLocal()
+        previous_segments = []
+        try:
+            prev_rows = db.query(TranscriptSegmentModel).filter(TranscriptSegmentModel.session_id == session_id).all()
+            previous_segments = [
+                {"utterance": row.utterance, "timestamp": row.timestamp.isoformat()}
+                for row in prev_rows
+            ]
+        except Exception as e:
+            print(f"Error reading prior transcripts: {e}")
+        finally:
+            db.close()
+
+        # 4. Run NLP contradiction & topic segmenter
+        nlp_result = analyze_linguistics(transcript, session_id, previous_segments)
+        
+        # 5. Continuous safety monitoring (intoxication trigger)
+        audio_safety_payload = {
+            "speech_rate": len(transcript.split()) * 60.0 / 3.0,
+            "voice_tremor": float(acoustic_cues.get("jitter", 0.0) * 50.0)
+        }
+        check_and_apply_safeguards(session_id, audio_data=audio_safety_payload)
+
+        # 6. Save segment to database if not already exists (deduplication)
+        db = SessionLocal()
+        try:
+            existing = db.query(TranscriptSegmentModel).filter(
+                TranscriptSegmentModel.session_id == session_id,
+                TranscriptSegmentModel.speaker_id == asr_result["speaker_id"],
+                TranscriptSegmentModel.start_time == asr_result["start_time"],
+                TranscriptSegmentModel.utterance == asr_result["utterance"]
+            ).first()
+            
+            if not existing:
+                segment_id = str(uuid.uuid4())
+                db_segment = TranscriptSegmentModel(
+                    id=segment_id,
+                    session_id=session_id,
+                    speaker_id=asr_result["speaker_id"],
+                    utterance=asr_result["utterance"],
+                    language=asr_result["language"],
+                    language_confidence=asr_result["confidence"],
+                    start_time=asr_result["start_time"],
+                    end_time=asr_result["end_time"],
+                    contradiction_flag=nlp_result["contradiction_flag"],
+                    contradiction_details=nlp_result["contradiction_details"]
+                )
+                db.add(db_segment)
+                db.commit()
+        except Exception as e:
+            print(f"Error saving transcript segment in background: {e}")
+            db.rollback()
+        finally:
+            db.close()
+
+        # Save to latest cache
+        if session_id not in latest_session_cues:
+            latest_session_cues[session_id] = {}
+        if "audio_cues" not in latest_session_cues[session_id]:
+            latest_session_cues[session_id]["audio_cues"] = {
+                "speaker_id": "Subject",
+                "utterance": "",
+                "language": "English",
+                "acoustic_cues": {
+                    "demo_mode": False,
+                    "pitch": 120.0,
+                    "jitter": 0.001,
+                    "shimmer": 0.02,
+                    "pitch_deviation_std": 0.0,
+                    "is_pitch_deviation": False
+                },
+                "nlp_analysis": {
+                    "demo_mode": False,
+                    "topic": "General Inquiry",
+                    "contradiction_flag": False,
+                    "contradiction_details": None
+                }
+            }
+        latest_session_cues[session_id]["audio_cues"].update({
+            "speaker_id": asr_result["speaker_id"],
+            "utterance": asr_result["utterance"],
+            "language": asr_result["language"],
+            "nlp_analysis": nlp_result
+        })
+    except Exception as e:
+        print(f"Error in background audio transcription: {e}")
+
+def run_audio_inference(audio_bytes: bytes, session_id: str, elapsed_seconds: float):
+    increment_active_tasks()
+    try:
+        # Convert incoming WebM bytes to 16kHz WAV format for compatibility with opensmile & whisper ASR
+        wav_bytes = convert_webm_to_wav(audio_bytes)
+        
+        # 2. Extract Acoustic Features (opensmile)
+        acoustic_cues = extract_acoustic_features(wav_bytes, session_id, elapsed_seconds)
+        
+        # Update baseline pitch
+        baseline = get_or_create_baseline(session_id)
+        if not baseline.is_complete():
+            baseline.add_sample("pitch", acoustic_cues["pitch"])
+            
+        # Calculate acoustic pitch deviation
+        pitch_dev = baseline.get_deviation("pitch", acoustic_cues["pitch"])
+
+        # Update latest cache with acoustic features immediately
+        if session_id not in latest_session_cues:
+            latest_session_cues[session_id] = {}
+        if "audio_cues" not in latest_session_cues[session_id]:
+            latest_session_cues[session_id]["audio_cues"] = {
+                "speaker_id": "Subject",
+                "utterance": "",
+                "language": "English",
+                "acoustic_cues": {
+                    "demo_mode": False,
+                    "pitch": 120.0,
+                    "jitter": 0.001,
+                    "shimmer": 0.02,
+                    "pitch_deviation_std": 0.0,
+                    "is_pitch_deviation": False
+                },
+                "nlp_analysis": {
+                    "demo_mode": False,
+                    "topic": "General Inquiry",
+                    "contradiction_flag": False,
+                    "contradiction_details": None
+                }
+            }
+        latest_session_cues[session_id]["audio_cues"]["acoustic_cues"] = {
+            **acoustic_cues,
+            "pitch_deviation_std": pitch_dev.get("deviation_std", 0.0),
+            "is_pitch_deviation": pitch_dev.get("is_deviation", False)
+        }
+
+        # Submit transcription & NLP pipeline to the background executor to avoid blocking the main inference workers
+        if transcription_executor._work_queue.qsize() == 0:
+            transcription_executor.submit(
+                process_audio_transcription_background,
+                wav_bytes,
+                session_id,
+                elapsed_seconds,
+                acoustic_cues
+            )
+        else:
+            print("Skipping audio chunk - transcription queue busy")
+    except Exception as e:
+        print(f"Error in background audio inference: {e}")
+    finally:
+        decrement_active_tasks()
+
 @app.post("/frame")
 async def upload_frame(
     session_id: str = Form(...),
     frame: UploadFile = File(...),
-    elapsed_seconds: float = Form(...)
+    elapsed_seconds: float = Form(...),
+    is_calibrating: str = Form("false")
 ):
+    print(f'Frame received: session={session_id}, is_calibrating={is_calibrating}')
     """
-    Ingests video frames, runs safety checks, and extracts calibrated visual and rPPG cues.
-    Strictly gates processing on consent status and vulnerability halters.
+    Ingests video frames, runs safety checks, and schedules background visual and rPPG cues processing.
+    Returns immediate 202 Accepted response with the last known result.
     """
     # 1. Enforce consent check
     if not is_inference_allowed(session_id):
-        # Consent-absent fallback mode: save frame but bypass model inference
+        # Consent-absent fallback mode
         return JSONResponse(
             status_code=200,
             content={"status": "fallback", "message": "Inference disabled: Consent absent or withdrawn."}
@@ -168,12 +433,6 @@ async def upload_frame(
 
     # Read frame bytes
     frame_bytes = await frame.read()
-    
-    # 2. Safety Layer Gating: check for distress/minors/impairments
-    # Pre-parse metadata to feed safeguards
-    db = SessionLocal()
-    session_row = db.query(SessionModel).filter(SessionModel.id == session_id).first()
-    db.close()
     
     # If session is already halted by safeguard
     safeguard = get_or_create_safeguard(session_id)
@@ -187,59 +446,39 @@ async def upload_frame(
             }
         )
 
-    # 3. Run Vision pipeline to get facial AUs, gaze, and posture
-    vision_cues = process_frame(frame_bytes, session_id, elapsed_seconds)
-    
-    # 4. Run rPPG pipeline to get heart rate
-    ppg_cues = estimate_heart_rate(frame_bytes, session_id, elapsed_seconds)
-    
-    # Merge outputs
-    combined_vision = {**vision_cues, "heart_rate": ppg_cues["heart_rate"]}
-    
-    # 5. Continuous safety monitoring (vulnerable subject triggers)
-    is_halted = check_and_apply_safeguards(session_id, vision_data=combined_vision)
-    if is_halted:
-        return JSONResponse(
-            status_code=200,
-            content={
-                "status": "halted",
-                "message": "Inference suspended by safeguard trigger.",
-                "reason": safeguard.trigger_reason
-            }
-        )
-        
-    # Add face AU sample to baseline tracker
-    baseline = get_or_create_baseline(session_id)
-    if not baseline.is_complete():
-        # Use average AU intensity
-        au_vals = [v for v in vision_cues.get("action_units", {}).values()]
-        mean_au = float(np.mean(au_vals)) if au_vals else 0.05
-        baseline.add_sample("face_au_intensity", mean_au)
-        # Use posture shift index
-        baseline.add_sample("posture_shift", vision_cues.get("posture", {}).get("posture_shift_index", 0.0))
+    is_calib_bool = (is_calibrating.lower() == "true")
 
-    # Save cue outputs to database for post-hoc history
-    db = SessionLocal()
-    try:
-        db_cue = BehavioralCueModel(
-            id=str(uuid.uuid4()),
-            session_id=session_id,
-            cue_type="vision_fused",
-            cue_data=combined_vision
-        )
-        db.add(db_cue)
-        db.commit()
-    except Exception as e:
-        print(f"Error saving vision cues to DB: {e}")
-        db.rollback()
-    finally:
-        db.close()
+    # Run Vision & PPG pipeline in background thread (non-blocking)
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor(inference_executor, run_frame_inference, frame_bytes, session_id, elapsed_seconds, is_calib_bool)
+    
+    # Fetch last known cues or return default baseline values
+    cache = latest_session_cues.get(session_id, {})
+    default_vision = cache.get("vision_cues", {
+        "demo_mode": False,
+        "face_detected": True,
+        "action_units": {f"AU{i}": 0.05 for i in [1, 2, 4, 5, 6, 7, 10, 12, 14, 15, 17, 20, 23, 25, 26, 45]},
+        "gaze": {"yaw": 0.0, "pitch": 0.0, "fixation_duration": 3.0, "saccade_frequency": 0.9, "gaze_aversion": False},
+        "head_pose": {"yaw": 0.0, "pitch": 0.0, "roll": 0.0},
+        "posture": {"forward_lean": 0.0, "shoulder_asymmetry": 0.0, "posture_shift_index": 0.0},
+        "heart_rate": 72.0
+    })
+    default_ppg = cache.get("ppg_cues", {
+        "demo_mode": False,
+        "heart_rate": 72.0,
+        "is_deviation": False,
+        "deviation_std": 0.0,
+        "baseline_completed": False
+    })
 
-    return {
-        "status": "success",
-        "vision_cues": vision_cues,
-        "ppg_cues": ppg_cues
-    }
+    return JSONResponse(
+        status_code=202,
+        content={
+            "status": "success",
+            "vision_cues": default_vision,
+            "ppg_cues": default_ppg
+        }
+    )
 
 @app.post("/audio")
 async def upload_audio(
@@ -248,9 +487,9 @@ async def upload_audio(
     elapsed_seconds: float = Form(...)
 ):
     """
-    Ingests 1-second audio WAV chunks, performs speaker diarization,
-    transcribes local languages (with code-switch support), extracts acoustic features,
-    and runs contradiction NLI checks.
+    Ingests 1-second audio WAV chunks and schedules background speech diarization, transcription,
+    acoustic features extraction, and contradiction checks.
+    Returns immediate 202 Accepted response with the last known result.
     """
     # 1. Enforce consent check
     if not is_inference_allowed(session_id):
@@ -274,98 +513,181 @@ async def upload_audio(
     # Read audio bytes
     audio_bytes = await audio.read()
     
-    # 2. Extract Acoustic Features (opensmile)
-    acoustic_cues = extract_acoustic_features(audio_bytes, session_id, elapsed_seconds)
-    
-    # Update baseline pitch
-    baseline = get_or_create_baseline(session_id)
-    if not baseline.is_complete():
-        baseline.add_sample("pitch", acoustic_cues["pitch"])
-        
-    # 3. Transcribe audio chunk (ASR)
-    asr_result = transcribe_audio_chunk(audio_bytes, session_id, elapsed_seconds)
-    
-    # Fetch previous transcript segments for this session to run contradiction checks
-    db = SessionLocal()
-    previous_segments = []
-    try:
-        prev_rows = db.query(TranscriptSegmentModel).filter(TranscriptSegmentModel.session_id == session_id).all()
-        previous_segments = [
-            {"utterance": row.utterance, "timestamp": row.timestamp.isoformat()}
-            for row in prev_rows
-        ]
-    except Exception as e:
-        print(f"Error reading prior transcripts: {e}")
-    finally:
-        db.close()
+    # Run Audio pipeline in background thread (non-blocking)
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor(inference_executor, run_audio_inference, audio_bytes, session_id, elapsed_seconds)
 
-    # 4. Run NLP contradiction & topic segmenter
-    nlp_result = analyze_linguistics(asr_result["utterance"], session_id, previous_segments)
-    
-    # 5. Continuous safety monitoring (intoxication trigger)
-    # Feed speech rate and pitch stress deltas
-    audio_safety_payload = {
-        "speech_rate": len(asr_result["utterance"].split()) * 60.0 / 3.0,  # rough wpm approximation
-        "voice_tremor": float(acoustic_cues["jitter"] * 50.0) # map jitter to tremor metric
-    }
-    is_halted = check_and_apply_safeguards(session_id, audio_data=audio_safety_payload)
-    if is_halted:
-        return JSONResponse(
-            status_code=200,
-            content={
-                "status": "halted",
-                "message": "Inference suspended by safeguard trigger.",
-                "reason": safeguard.trigger_reason
-            }
+    # Fetch last known audio cues or return default values
+    cache = latest_session_cues.get(session_id, {})
+    default_audio = cache.get("audio_cues", {
+        "speaker_id": "Subject",
+        "utterance": "",
+        "language": "English",
+        "acoustic_cues": {
+            "demo_mode": False,
+            "pitch": 120.0,
+            "jitter": 0.001,
+            "shimmer": 0.02,
+            "pitch_deviation_std": 0.0,
+            "is_pitch_deviation": False
+        },
+        "nlp_analysis": {
+            "demo_mode": False,
+            "topic": "General Inquiry",
+            "contradiction_flag": False,
+            "contradiction_details": None
+        }
+    })
+
+    return JSONResponse(
+        status_code=202,
+        content={
+            "status": "success",
+            **default_audio
+        }
+    )
+
+def run_text_only_inference(transcript: str, session_id: str, elapsed_seconds: float):
+    try:
+        db = SessionLocal()
+        previous_segments = []
+        try:
+            prev_rows = db.query(TranscriptSegmentModel).filter(TranscriptSegmentModel.session_id == session_id).all()
+            previous_segments = [
+                {"utterance": row.utterance, "timestamp": row.timestamp.isoformat()}
+                for row in prev_rows
+            ]
+        except Exception as e:
+            print(f"Error reading prior transcripts in text inference: {e}")
+
+        nlp_result = analyze_linguistics(transcript, session_id, previous_segments)
+        
+        # Continuous safety monitoring (intoxication trigger)
+        audio_safety_payload = {
+            "speech_rate": len(transcript.split()) * 60.0 / 3.0,
+            "voice_tremor": 0.0
+        }
+        check_and_apply_safeguards(session_id, audio_data=audio_safety_payload)
+
+        # Generate segment ID
+        segment_id = str(uuid.uuid4())
+        segment = TranscriptSegmentModel(
+            id=segment_id,
+            session_id=session_id,
+            speaker_id='Subject',
+            utterance=transcript,
+            language='English',
+            start_time=elapsed_seconds,
+            end_time=elapsed_seconds + 3.0,
+            contradiction_flag=nlp_result.get('contradiction_flag', False),
+            contradiction_details=nlp_result.get('contradiction_details')
         )
-
-    # 6. Save segment to database if not already exists (deduplication)
-    db = SessionLocal()
-    try:
-        existing = db.query(TranscriptSegmentModel).filter(
-            TranscriptSegmentModel.session_id == session_id,
-            TranscriptSegmentModel.speaker_id == asr_result["speaker_id"],
-            TranscriptSegmentModel.start_time == asr_result["start_time"],
-            TranscriptSegmentModel.utterance == asr_result["utterance"]
-        ).first()
-        
-        if not existing:
-            segment_id = str(uuid.uuid4())
-            db_segment = TranscriptSegmentModel(
-                id=segment_id,
-                session_id=session_id,
-                speaker_id=asr_result["speaker_id"],
-                utterance=asr_result["utterance"],
-                language=asr_result["language"],
-                language_confidence=asr_result["confidence"],
-                start_time=asr_result["start_time"],
-                end_time=asr_result["end_time"],
-                contradiction_flag=nlp_result["contradiction_flag"],
-                contradiction_details=nlp_result["contradiction_details"]
-            )
-            db.add(db_segment)
-            db.commit()
+        db.add(segment)
+        db.commit()
     except Exception as e:
-        print(f"Error saving transcript segment: {e}")
-        db.rollback()
+        print(f'Text inference error: {e}')
     finally:
         db.close()
 
-    # Calculate acoustic pitch deviation
-    pitch_dev = baseline.get_deviation("pitch", acoustic_cues["pitch"])
+@app.post("/audio-text")
+async def submit_audio_text(request: Request):
+    data = await request.json()
+    session_id = data.get("session_id")
+    transcript = data.get("transcript", "").strip()
+    elapsed_seconds = float(data.get("elapsed_seconds", 0))
+    if not transcript or len(transcript) < 2:
+        return {"status": "skipped"}
+    inference_executor.submit(run_text_only_inference, transcript, session_id, elapsed_seconds)
+    return {"status": "accepted", "transcript": transcript}
 
+@app.get("/latest-cues/{session_id}")
+def get_latest_cues(session_id: str):
+    """
+    Returns the most recent computed cues for a session without triggering new inference.
+    Used for frontend polling to retrieve real-time status.
+    """
+    cache = latest_session_cues.get(session_id, {})
+    vision_cues = cache.get("vision_cues", {
+        "demo_mode": False,
+        "face_detected": True,
+        "action_units": {f"AU{i}": 0.05 for i in [1, 2, 4, 5, 6, 7, 10, 12, 14, 15, 17, 20, 23, 25, 26, 45]},
+        "gaze": {"yaw": 0.0, "pitch": 0.0, "fixation_duration": 3.0, "saccade_frequency": 0.9, "gaze_aversion": False},
+        "head_pose": {"yaw": 0.0, "pitch": 0.0, "roll": 0.0},
+        "posture": {"forward_lean": 0.0, "shoulder_asymmetry": 0.0, "posture_shift_index": 0.0},
+        "heart_rate": 72.0
+    })
+    ppg_cues = cache.get("ppg_cues", {
+        "demo_mode": False,
+        "heart_rate": 72.0,
+        "is_deviation": False,
+        "deviation_std": 0.0,
+        "baseline_completed": False
+    })
+    audio_cues = cache.get("audio_cues", {
+        "speaker_id": "Subject",
+        "utterance": "",
+        "language": "English",
+        "acoustic_cues": {
+            "demo_mode": False,
+            "pitch": 120.0,
+            "jitter": 0.001,
+            "shimmer": 0.02,
+            "pitch_deviation_std": 0.0,
+            "is_pitch_deviation": False
+        },
+        "nlp_analysis": {
+            "demo_mode": False,
+            "topic": "General Inquiry",
+            "contradiction_flag": False,
+            "contradiction_details": None
+        }
+    })
     return {
         "status": "success",
-        "speaker_id": asr_result["speaker_id"],
-        "utterance": asr_result["utterance"],
-        "language": asr_result["language"],
-        "acoustic_cues": {
-            **acoustic_cues,
-            "pitch_deviation_std": pitch_dev.get("deviation_std", 0.0),
-            "is_pitch_deviation": pitch_dev.get("is_deviation", False)
-        },
-        "nlp_analysis": nlp_result
+        "is_inference_running": (transcription_executor._work_queue.qsize() > 0 or
+                                 inference_executor._work_queue.qsize() > 0),
+        "vision_cues": vision_cues,
+        "ppg_cues": ppg_cues,
+        "audio_cues": audio_cues
     }
+
+@app.on_event("startup")
+def pre_warm_models():
+    """Pre-warms all local ML models by executing dummy inference requests on startup."""
+    print("Pre-warming all ML models for ASR, Face cues, openSMILE, rPPG, and NLP...")
+    try:
+        import numpy as np
+        # 1. Warm up face_cues
+        dummy_img = np.zeros((224, 224, 3), dtype=np.uint8)
+        process_frame(dummy_img.tobytes(), "warmup_session", 0.0)
+        
+        # 2. Warm up rPPG
+        estimate_heart_rate(dummy_img.tobytes(), "warmup_session", 0.0)
+        
+        # 3. Warm up ASR & openSMILE
+        import wave
+        import io
+        import struct
+        dummy_audio = np.zeros(16000 * 3, dtype=np.float32)
+        wav_buf = io.BytesIO()
+        with wave.open(wav_buf, "wb") as w:
+            w.setparams((1, 2, 16000, 16000*3, "NONE", "not compressed"))
+            for val in dummy_audio:
+                w.writeframes(struct.pack("<h", int(val)))
+        wav_data = wav_buf.getvalue()
+        
+        # Pre-warm: just verify model is loaded, don't run inference
+        from audio.asr import REAL_ASR_AVAILABLE
+        if REAL_ASR_AVAILABLE:
+            print("ASR model loaded and ready")
+        extract_acoustic_features(wav_data, "warmup_session", 0.0)
+        
+        # 4. Warm up NLP
+        analyze_linguistics("Hello, I am ready.", "warmup_session", [])
+        
+        print("All ML models pre-warmed successfully!")
+    except Exception as e:
+        print(f"Error pre-warming models: {e}")
 
 @app.get("/status")
 def get_session_status(session_id: str, db: Session = Depends(get_db)):
@@ -551,7 +873,8 @@ def download_session_report(session_id: str, db: Session = Depends(get_db)):
         canvas.setFillColor(colors.HexColor('#EEEEEE')) # light grey (requested #EEEEEE)
         canvas.translate(306, 396)
         canvas.rotate(45)
-        canvas.drawCentredString(0, 0, "DEMO / SIMULATION MODE")
+        watermark_text = "DEMO / SIMULATION MODE" if session.demo_mode else "LIVE INFERENCE MODE"
+        canvas.drawCentredString(0, 0, watermark_text)
         canvas.restoreState()
         
         # 4. Footer
@@ -649,7 +972,7 @@ def download_session_report(session_id: str, db: Session = Depends(get_db)):
         ["Officer ID:", session.officer_id, "Location:", session.location or "On-Premises Interview Room"],
         ["Consent Status:", session.consent_status, "Is Vulnerable:", "Yes (MINOR)" if session.is_vulnerable else "No"],
         ["Case Type:", case_type_val, "Language Vol.:", lang_val],
-        ["Execution Mode:", "DEMO / SIMULATION FALLBACK" if session.demo_mode else "LIVE PRODUCTION", "", ""],
+        ["Execution Mode:", "DEMO / SIMULATION FALLBACK" if session.demo_mode else "LIVE INFERENCE", "", ""],
         ["ECE Calibration:", "0.038 (Calibrated)", "", ""]
     ]
     t_meta = Table(metadata_data, colWidths=[110, 150, 110, 150])

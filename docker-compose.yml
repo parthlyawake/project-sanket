@@ -57,6 +57,7 @@ services:
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
       - HF_TOKEN=${HF_TOKEN}
+      - WHISPER_MODEL=openai/whisper-tiny
     volumes:
       - model_cache:/app/models/hf_cache
     networks:

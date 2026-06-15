@@ -45,6 +45,7 @@ class SessionModel(Base):
     demographics_volunteered = Column(JSON, nullable=True)  # e.g., {"sex": "Male", "age_group": "18-30", "language": "Hindi"}
     is_vulnerable = Column(Boolean, default=False, nullable=False)
     demo_mode = Column(Boolean, default=False, nullable=False)
+    is_live_session = Column(Boolean, default=True, nullable=False)
     final_hash = Column(String, nullable=True)
 
     transcripts = relationship("TranscriptSegmentModel", back_populates="session", cascade="all, delete-orphan")
