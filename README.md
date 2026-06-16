@@ -123,17 +123,26 @@ docker-compose exec backend python -m unittest test/test_kpis.py
 
 ---
 
-## 🔧 Recent Cue Processing & Validation Enhancements
+## 🔧 Streamlined CPU Telemetry & Multi-lingual Processing Pipelines
 
-SANKET has been updated with several critical refinements to improve the accuracy and robustness of behavior analysis pipelines:
+SANKET has been overhauled to support seamless execution on CPU-only edge hardware by decoupling heavy models and offloading speech pipeline workloads:
 
-1. **Linguistic Contradiction Optimization (`contradiction.py`)**:
-   - **Utterance Length Gate**: Added a minimum length check of 5 words per statement to avoid noise/falses on short utterances (e.g., "I work", "hey my name is Parth").
-   - **Semantic Similarity Threshold**: Elevated the LaBSE scaled similarity check threshold to `scaled_sim <= 0.7` to ensure that only strongly semantically opposite statements trigger flags (rather than mere topic shifts).
-   - **Temporal Context Sensitivity**: Added regex-based temporal token extraction (`morning`, `noon`, specific times like `10 am`, weekdays, months) to verify if compared statements reference different, non-overlapping time contexts before running contradiction checks.
+1. **Streamlined CPU Target Infrastructure**:
+   - Running entirely on CPU-only local workstations by integrating lightweight containerized components (FastAPI backend + Nginx static frontend).
+   - Decoupled heavy local machine ASR inference models by leveraging the browser's native **Web Speech API** for real-time speech-to-text.
+   - Whisper-tiny is configured as a silent, fallback container ASR pipeline to capture audio chunks only when native APIs are restricted.
 
-2. **rPPG CHROM Noise Filtering (`ppg.py`)**:
-   - **Target Frequency Band**: Re-centered the chrominance bandpass filter to look specifically at the `0.92` Hz to `1.67` Hz range (equivalent to 55 to 100 BPM), filtering out low-frequency noise (e.g. 45 BPM) and high-frequency motion artifacts.
+2. **Multi-lingual Ingestion & Localized ASR**:
+   - Integrates native browser speech diarization targeting **Indian English (en-IN)**.
+   - Provides full ingestion support for **5 target languages** (English, Hindi, Marathi, Tamil, Telugu) selectable via a Demographics interface dropdown.
+   - Enforces language locale mappings that persist in real-time across the tablet dashboard panel elements.
+
+3. **Optimized Physiology & Face Contours Telemetry**:
+   - **rPPG CHROM Filtering (`ppg.py`)**: A pure NumPy and OpenCV-based CHROM rPPG algorithm that processes forehead ROI color pulse variations using a strict bandpass filter tuned to `0.92 - 1.67 Hz` (corresponding to a clean **55 - 100 BPM** physiological heart rate band) to completely filter out ambient light and head-motion artifacts.
+   - **AU4 Brow Furrow Blendshapes (`face_cues.py`)**: Replaced raw face landmark coordinates with MediaPipe's dynamic Face Blendshapes tracking system (`browDownLeft` + `browDownRight`) to natively drive the AU4 Brow Furrow intensity graph.
+
+4. **Shortened Baseline Calibration**:
+   - The trailing physiological baseline calibration window has been shortened down to exactly **60 seconds** to optimize baseline profiling. The UI dynamically clears the "Baseline collection in progress" explainability attributions panel past this 60s active operational window to show a clean dashboard.
 
 ---
 

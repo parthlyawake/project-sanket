@@ -27,13 +27,13 @@ project_sanket/
   │    ├── minio_client.py   # MinIO wrapping service with filesystem folder fallback
   │    ├── consent.py        # Consent tracking & DPDP compliance logic
   │    ├── audit_log.py      # Ed25519-signed append-only log writer
-  │    ├── baseline.py       # Configurable 3-5m silent baseline manager
+  │    ├── baseline.py       # Streamlined 60-second silent physiological baseline manager
   │    ├── safeguard.py      # Vulnerable subject triggers (minors, distress)
   │    ├── vision/
-  │    │    ├── face_cues.py # MediaPipe face mesh & OpenCV Haar Cascade tracker
-  │    │    └── ppg.py       # pyVHR remote heart rate estimation
+  │    │    ├── face_cues.py # MediaPipe Face Blendshapes tracker driving the Brow Furrow graph
+  │    │    └── ppg.py       # pure NumPy/OpenCV CHROM heart rate estimation
   │    ├── audio/
-  │    │    ├── asr.py       # Local ASR model loader & mock registry parser
+  │    │    ├── asr.py       # Native browser Web Speech API & Whisper fallback ASR
   │    │    └── opensmile.py # eGeMAPS voice features & NumPy autocorrelation
   │    ├── nlp/
   │    │    └── contradiction.py # XLM-RoBERTa contradiction detector & topic segmenter

@@ -50,44 +50,47 @@ Open your browser and navigate to the following ports:
 
 ---
 
-## 🎥 Running the Live Streaming Demo
+## 🎥 Running the Live Streaming Demo & Showcase Script
 
-To show a live demo with real-time telemetry, follow these steps:
+To showcase a live demo with real-time telemetry, follow this script highlighting SANKET's premium feature set:
 
-### 1. Register Consent and Start a Session
-1.  Open the UI at `http://localhost:3001`.
-2.  Enter a Session ID: `live_test_session_abc`.
-3.  Fill in the volunteer demographics (e.g. Language: `Tamil`, Officer: `officer_priya`).
-4.  Click **Accept & Start Analysis**.
-5.  The dashboard will open, saying `Awaiting streaming telemetry (Ingesting video/audio chunks)...` and start compiling baseline profiles.
+### 1. Register Consent in the Newsprint UI
+1. Open the UI at `http://localhost:3001` to view the flat, sharp **Newsprint/Editorial Newspaper aesthetic** (pure white cards, 1px solid borders, zero corner radii, and bold Times-Bold headings).
+2. Enter a Session ID: `live_test_session_abc`.
+3. Select the target language from the **multi-language demographics selector dropdown** (supporting `English (en-IN)`, `Hindi (hi-IN)`, `Marathi (mr-IN)`, `Tamil (ta-IN)`, and `Telugu (te-IN)`).
+4. Demonstrate the **Subject / Officer turn-taking toggle** on the demographic screen and live dashboard which dynamically gates officer questioning from self-contradiction analysis.
+5. Click **Accept & Start Analysis**. The dashboard will load immediately. The progress bar compiles baseline data during the shortened **60-second baseline collection window**, clearing the progress labels dynamically at 60s session elapsed time.
 
 ---
 
-### 2. Trigger the Mock Streams (Simultaneously)
-Open **two separate terminal windows** in the project root to stream simulated webcam frames and audio segments to the running container.
+### 2. Trigger the Mock Streams & Verification Gauntlets
+Open **two separate terminal windows** in the project root to stream simulated webcam frames and audio segments:
 
 *   **Terminal 1 (Mock Video Stream):**
-    Streams 2D face contours (including gaze shifts, blinks, lip movements, and rPPG color pulse changes) to the `/frame` endpoint:
+    Streams 2D face contours (including eye gaze variations, blink dynamics, and forehead color pulse changes for rPPG tracking) to the `/frame` endpoint:
     ```bash
     python project_sanket/scripts/mock_video.py --stream-api --session-id live_test_session_abc --url http://localhost:8001/frame
     ```
 
 *   **Terminal 2 (Mock Audio Stream):**
-    Streams audio segments containing Hindi, Hinglish, Marathi, and Tamil utterances to the `/audio` endpoint, triggering real Whisper-Base translation, acoustic pitch estimation, and semantic contradiction alerts:
+    Streams audio segments to the `/audio` endpoint, testing our **3 Programmatic NLP Gauntlets**:
     ```bash
     python project_sanket/scripts/mock_audio.py --stream-api --session-id live_test_session_abc --url http://localhost:8001/audio
     ```
 
-*   **Expected Behavior:**
-    *   The React UI will poll `/latest-cues/live_test_session_abc` and draw scrolling line graphs.
-    *   Rotating CSS spinners will display on each cue card to show active background processing.
-    *   A contradiction alert will trigger in the transcript panel when the subject states: *"Actually, manager is my close family friend..."* after claiming to not know him.
+#### 🛡️ Showcase the 3 NLP Verification Gauntlets:
+1.  **Speaker Gating (Officer Immunity)**: Select "Officer" via the turn-taking toggle and type or speak. Verify that when the speaker is labeled "Officer", the semantic contradiction engine ignores their utterance entirely, preventing officer questions from triggering flags.
+2.  **Echo/Incremental ASR Filter**: Submit two highly similar, incremental speech transcripts (e.g., *"I voice eating my lunch"* and *"I was eating my lunch"*). SANKET computes the raw LaBSE cosine similarity, and because the similarity exceeds **0.90**, it ignores the duplicate as an incremental whisper correction instead of flagging a contradiction.
+3.  **Cross-Lingual Social Context Match**: Speak or submit a contradiction using Hindi, Marathi, Tamil, or Telugu keywords (e.g., claiming to be alone *"अकेला"* but subsequently mentioning kids *"बच्चे"* or family). SANKET catches the social mismatch and immediately flags the semantic contradiction.
 
 ---
 
-### 3. Generate and Download the PDF Report
+### 3. Generate the Monochromatic PDF Dossier
 *   Click **END INTERVIEW & GET REPORT** on the bottom left of the tablet UI.
-*   This triggers the PDF generator. The generated PDF will show **Execution Mode: LIVE INFERENCE** and display a clean diagonal watermark stating **LIVE INFERENCE MODE**.
+*   This triggers the automated **ReportLab PDF generator**, which outputs a premium document styled directly with the newsprint aesthetic:
+    *   Flat geometric styling with 0 corner radii, sharp solid black table grids, and Times-Bold serif article headers on a soft off-white canvas `#F9F9F7`.
+    *   **Live Session Aggregates**: Displays genuine calculated averages of heart rate (BPM) and maximum brow furrow (AU4 blendshape) mapped to the exact time bounds of the utterances within each discussion topic.
+    *   High-contrast solid dark red (`#CC0000`) is reserved strictly for highlighting confirmed contradictions.
 
 ---
 
