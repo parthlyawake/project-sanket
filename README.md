@@ -1,168 +1,171 @@
-# 🏛️ Project SANKET
+<table width="100%" bgcolor="#F9F9F7" border="3" bordercolor="#111111" cellpadding="15" cellspacing="0" style="border: 3px solid #111111; border-collapse: collapse;">
+  <tr>
+    <td align="center">
+      <font face="Times New Roman, serif" size="7"><b>THE SANKET DISPATCH</b></font><br>
+      <font face="Times New Roman, serif" size="4"><i>Project SANKET: Multimodal Assistive Situational Awareness Platform</i></font><br><br>
+      <table width="100%" border="1" bordercolor="#111111" cellpadding="6" cellspacing="0" bgcolor="#F2F2F0" style="border: 1px solid #111111; border-collapse: collapse;">
+        <tr>
+          <td align="left"><font face="Helvetica, Arial, sans-serif" size="2"><b>VOL. I ... NO. 1</b></font></td>
+          <td align="center"><font face="Helvetica, Arial, sans-serif" size="2"><b>ON-PREMISE AGENTIC EDITION</b></font></td>
+          <td align="right"><font face="Helvetica, Arial, sans-serif" size="2"><b>JUNE 2026</b></font></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
 
-> **Multimodal AI Assistant for Investigative Interview Analysis**
+<br>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Python Version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.13-blue.svg)](https://www.python.org/)
-[![React Version](https://img.shields.io/badge/react-18.x-cyan.svg)](https://react.dev/)
-[![Docker Compose](https://img.shields.io/badge/docker--compose-active-green.svg)](https://www.docker.com/)
+<table width="100%" bgcolor="#F9F9F7" border="1" bordercolor="#111111" cellpadding="15" cellspacing="0" style="border: 1px solid #111111; border-collapse: collapse;">
+  <tr valign="top">
+    <td width="55%" style="text-align: justify; border-right: 1px solid #111111; padding: 15px;">
+      <font face="Times New Roman, serif" size="5"><b>🗞️ Decoupled CPU Stack & Host Architecture</b></font>
+      <hr size="1" color="#111111" style="background-color: #111111; height: 1px; border: none;">
+      <p><font face="Georgia, serif" size="3">Project SANKET is engineered as an on-premises investigative companion running seamlessly on a <b>CPU-only workstation</b>. Heavy machine ASR model inference has been decoupled from the local host loop; real-time transcription is offloaded directly to the client's browser-native <b>Web Speech API</b>. This achieves zero pipeline queue lag, leaving the local host processor dedicated to lightweight digital signal processing (DSP) and weighted Late Bayesian Fusion.</font></p>
+      
+      <font face="Times New Roman, serif" size="5"><b>🗣️ Multilingual Ingestion & Dialects</b></font>
+      <hr size="1" color="#111111" style="background-color: #111111; height: 1px; border: none;">
+      <p><font face="Georgia, serif" size="3">SANKET supports <b>5 target regional dialects</b> (English, Hindi, Marathi, Tamil, Telugu) and Indian English (en-IN). Language tags are mapped dynamically in the client-side polling loops so background status updates never overwrite transcript card metadata.</font></p>
 
-**SANKET** (संकेत - meaning *"signal / cue"* in Sanskrit and Hindi) is a legal-compliant, secure, and ethical **on-premise assistive platform** designed to surface behavioral, vocal, and physiological cues during investigative interviews. 
+      <font face="Times New Roman, serif" size="5"><b>👮 Investigator Turn-Taking Immunity</b></font>
+      <hr size="1" color="#111111" style="background-color: #111111; height: 1px; border: none;">
+      <p><font face="Georgia, serif" size="3">Toggled via a Ref-backed switch (<code>activeSpeakerRef.current === 'Officer'</code>). Officer statements are logged for conversational context but completely bypass NLI contradiction analysis to protect investigative lines of questioning.</font></p>
+    </td>
+    <td width="45%" bgcolor="#F2F2F0" style="padding: 15px;">
+      <font face="Times New Roman, serif" size="5"><b>📊 Telemetry & DSP Index</b></font>
+      <hr size="1" color="#111111" style="background-color: #111111; height: 1px; border: none;">
+      <ul>
+        <li><font face="Helvetica, Arial, sans-serif" size="2.5"><b>NumPy CHROM rPPG Filter:</b> Pure NumPy and OpenCV forehead ROI tracking with a strict bandpass filter tuned to <b>55-100 BPM</b> (0.92-1.67 Hz) to eliminate motion and light artifacts.</font></li><br>
+        <li><font face="Helvetica, Arial, sans-serif" size="2.5"><b>AU4 Brow Furrow Blendshapes:</b> Tracks MediaPipe's dynamic <code>browDownLeft</code> + <code>browDownRight</code> blendshape parameters to natively drive the Brow Furrow graph.</font></li><br>
+        <li><font face="Helvetica, Arial, sans-serif" size="2.5"><b>60s Trailing Baseline:</b> Streamlined physiological calibration window of exactly <b>60 seconds</b>, dynamically clearing explainability alerts past the window.</font></li>
+      </ul>
+      
+      <br>
+      <font face="Times New Roman, serif" size="5"><b>🏛️ Legal & Compliance Mapping</b></font>
+      <hr size="1" color="#111111" style="background-color: #111111; height: 1px; border: none;">
+      <table width="100%" border="1" bordercolor="#111111" cellpadding="4" cellspacing="0" bgcolor="#F9F9F7" style="border: 1px solid #111111; border-collapse: collapse; font-family: Helvetica, Arial, sans-serif; font-size: 11px;">
+        <tr bgcolor="#111111">
+          <th><font color="white">Act</font></th>
+          <th><font color="white">Implementation</font></th>
+        </tr>
+        <tr>
+          <td><b>Art. 20(3)</b></td>
+          <td>Voluntary gating; locks out if consent refused.</td>
+        </tr>
+        <tr>
+          <td><b>Art. 21</b></td>
+          <td>100% on-premises offline local execution.</td>
+        </tr>
+        <tr>
+          <td><b>Selvi (2010)</b></td>
+          <td>Calibrated arousal probabilities; no binary lie test.</td>
+        </tr>
+        <tr>
+          <td><b>DPDP 2023</b></td>
+          <td>Explicit consent, withdrawal, right to erasure.</td>
+        </tr>
+        <tr>
+          <td><b>BNSS 2023</b></td>
+          <td>Safeguards automatically warning on vulnerabilities.</td>
+        </tr>
+        <tr>
+          <td><b>BSA 2023</b></td>
+          <td>Ed25519-signed append-only audit log chain.</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
 
-It is strictly engineered as an **assistive situational awareness tool** for investigating officers—fully aligned with the **Selvi v. Karnataka (2010)** ruling to prevent involuntary self-incrimination and deception classification.
+<br>
 
----
+<table width="100%" bgcolor="#F9F9F7" border="1" bordercolor="#111111" cellpadding="15" cellspacing="0" style="border: 1px solid #111111; border-collapse: collapse;">
+  <tr>
+    <td>
+      <font face="Times New Roman, serif" size="5"><b>🔀 System Logic & Text Routing Flowchart</b></font>
+      <hr size="1" color="#111111" style="background-color: #111111; height: 1px; border: none;">
+      <pre style="font-family: monospace; font-size: 12px; line-height: 1.2; color: #111111;">
+             [ Incoming Speech Segment ]
+                         │
+                         ▼
+               /───────────────────\
+              <   Speaker Labeled   >
+               \  "Officer"?       /
+                 \───────────────/
+                   │           │
+           YES     │           │  NO (Subject)
+                   ▼           ▼
+             [ LOG ONLY ]  [ Echo Filter ] ─── Raw similarity > 0.90? ──► [ SKIP ]
+            (Immunity Gated)   │
+                               │ NO (New Utterance)
+                               ▼
+                           /───────\
+                          <  Alone  > ◄─── Matches ALONE_WORDS?
+                           \───────/
+                               │
+                               ▼
+                           /───────\
+                          < People  > ◄─── Matches PEOPLE_WORDS?
+                           \───────/
+                               │
+                               ▼
+               [ Social Context Exclusion Check ]
+                (Flag Contradiction if Both Match)
+                               │
+                               ▼
+                   [ XLM-RoBERTa NLI Engine ]
+                (Check Semantic Contradiction)
+      </pre>
+    </td>
+  </tr>
+</table>
 
-## 🏛️ Legal & Compliance Mapping
+<br>
 
-| Legal framework | System Provision | Code Implementation |
-| :--- | :--- | :--- |
-| **Article 20(3), Indian Constitution** | biometrics-based frame/audio processing is 100% voluntary; locks out inference if consent is refused. | [consent.py](file:///c:/Users/Parth/OneDrive/Desktop/sanket/project_sanket/backend/consent.py#L64-L80) & [app.py](file:///c:/Users/Parth/OneDrive/Desktop/sanket/project_sanket/backend/app.py#L161-L167) |
-| **Article 21 (Puttaswamy Privacy)** | 100% on-premises offline hardware execution; zero cloud connections or external APIs. | [asr.py](file:///c:/Users/Parth/OneDrive/Desktop/sanket/project_sanket/backend/audio/asr.py#L44-L57) & [contradiction.py](file:///c:/Users/Parth/OneDrive/Desktop/sanket/project_sanket/backend/nlp/contradiction.py#L83-L90) |
-| **Selvi v. State of Karnataka (2010)** | Observes raw baseline deviations. No binary "lie/truth" outputs; surfaces probability-calibrated arousal indicators. | [fusion.py](file:///c:/Users/Parth/OneDrive/Desktop/sanket/project_sanket/backend/fusion.py#L70-L125) & [App.js](file:///c:/Users/Parth/OneDrive/Desktop/sanket/project_sanket/frontend/src/App.js#L415-L430) |
-| **DPDP Act, 2023** | Captures explicit consent notices, implements immediate withdrawal, and right to erasure (permanent data wiping). | [consent.py](file:///c:/Users/Parth/OneDrive/Desktop/sanket/project_sanket/backend/consent.py#L82-L109) & [App.js](file:///c:/Users/Parth/OneDrive/Desktop/sanket/project_sanket/frontend/src/App.js#L196-L224) |
-| **BNSS, 2023** | Safeguard gates automatically halt processing for vulnerable subjects (minors, distress, intoxication). | [safeguard.py](file:///c:/Users/Parth/OneDrive/Desktop/sanket/project_sanket/backend/safeguard.py#L39-L84) & [app.py](file:///c:/Users/Parth/OneDrive/Desktop/sanket/project_sanket/backend/app.py#L179-L189) |
-| **BSA, 2023** | Enforces Ed25519-signed append-only audit ledgers and SHA-256 chain logs for custody verification. | [audit_log.py](file:///c:/Users/Parth/OneDrive/Desktop/sanket/project_sanket/backend/audit_log.py#L45-L115) & [app.py](file:///c:/Users/Parth/OneDrive/Desktop/sanket/project_sanket/backend/app.py#L526-L587) |
+<table width="100%" bgcolor="#FFF5F5" border="2" bordercolor="#CC0000" cellpadding="15" cellspacing="0" style="border: 2px dashed #CC0000; border-collapse: collapse;">
+  <tr>
+    <td>
+      <font face="Times New Roman, serif" size="4" color="#CC0000"><b>⚠️ LEGAL NOTICE & SAFEGUARD GATEWAY</b></font>
+      <p><font face="Georgia, serif" size="3" color="#111111">Under Section 65B of the Indian Evidence Act (Bharatiya Sakshya Adhiniyam, 2023), SANKET is classified as an assistive platform only. Its indicators represent statistical deviations from physiological baselines, not substantiating direct evidence of guilt or deception. Consent is required to start inference pipelines; erasure request permanently purges PostgreSQL records.</font></p>
+    </td>
+  </tr>
+</table>
 
----
+<br>
 
-## 🏗️ System Architecture & File Structure
+<table width="100%" bgcolor="#F9F9F7" border="1" bordercolor="#111111" cellpadding="15" cellspacing="0" style="border: 1px solid #111111; border-collapse: collapse;">
+  <tr>
+    <td>
+      <font face="Times New Roman, serif" size="5"><b>🚀 Quick Start (Docker Compose Detached Mode)</b></font>
+      <hr size="1" color="#111111" style="background-color: #111111; height: 1px; border: none;">
+      <p><font face="Georgia, serif" size="3">Run from the root directory to spin up the decoupled stack:</font></p>
+      <pre style="font-family: monospace; font-size: 12px; background-color: #F2F2F0; padding: 10px; border: 1px solid #111111;">
+# Boot the PostgreSQL, MinIO, Nginx static frontend, and FastAPI backend
+docker compose up -d
 
-```
-sanket/
-  ├── logs/                  # Local volume mount for cryptographic audit logs
-  ├── project_sanket/        # Main application folder
-  │    ├── backend/          # FastAPI backend server
-  │    │    ├── audio/       # ASR (Whisper) & openSMILE voice stress analysis
-  │    │    ├── vision/      # Face AU mesh tracker & pyVHR rPPG heart rate estimator
-  │    │    ├── nlp/         # XLM-RoBERTa NLI contradiction & topic segmenter
-  │    │    ├── test/        # Programmatic KPI verification unit tests
-  │    │    ├── app.py       # FastAPI core routes & ReportLab PDF generator
-  │    │    ├── database.py  # PostgreSQL ORM connection with SQLite fallback
-  │    │    └── fusion.py    # Weighted Late Bayesian Fusion & temperature scaling
-  │    ├── frontend/         # React tablet interface application
-  │    │    ├── src/         # Webcam streams, timeline rendering & glassmorphic UI
-  │    │    └── package.json # NPM react-scripts dependencies
-  │    └── scripts/          # Automation and evaluation scripts
-  │         ├── generate_mock_sessions.py  # Sequential mock session generator
-  │         ├── evaluate_kpis.py           # Multi-session demographic parity and ECE validator
-  │         ├── mock_audio.py              # Mock audio streaming client
-  │         └── mock_video.py              # Mock frame streaming client
-  ├── docker-compose.yml     # CPU/Production Docker Compose configurations
-  ├── docker-compose.gpu.yml # Optional GPU overrides
-  ├── .env                   # On-premise environment variables
-  └── .gitignore             # Git exclusion rules
-```
+# Verify container statuses (postgres, minio, backend, frontend)
+docker compose ps</pre>
+    </td>
+  </tr>
+</table>
 
----
+<br>
 
-## 🚀 Quick Start (Docker Compose)
-
-The easiest way to boot the complete ecosystem is using Docker. By default, ports are mapped to avoid collisions:
-- **FastAPI Backend:** [http://localhost:8001](http://localhost:8001) (Swagger docs at `/docs`)
-- **React Frontend:** [http://localhost:3001](http://localhost:3001)
-- **MinIO Dashboard:** [http://localhost:9001](http://localhost:9001)
-
-### 1. Launch Services
-Run from the root directory:
-```bash
-# Start all containers in the background (CPU Mode)
-docker-compose up -d
-```
-
-### 2. Verify Health
-Ensure all four containers (`postgres`, `minio`, `backend`, `frontend`) are up and healthy:
-```bash
-docker-compose ps
-```
-
----
-
-## 📊 Dataset Simulation & KPI Validation
-
-Project SANKET includes scripts to simulate a dataset of 5 multilingual sessions (Hindi, Tamil, Marathi, Hinglish, Bengali) and execute verification audits.
-
-### 1. Generate the Multilingual Mock Dataset
-Stream telemetries sequentially, generate PDF reports, and write data logs:
-```bash
-# Enable UTF-8 console output for Indic scripts on Windows
+<table width="100%" bgcolor="#F9F9F7" border="1" bordercolor="#111111" cellpadding="15" cellspacing="0" style="border: 1px solid #111111; border-collapse: collapse;">
+  <tr>
+    <td>
+      <font face="Times New Roman, serif" size="5"><b>📊 Dataset Simulation & KPI Validation</b></font>
+      <hr size="1" color="#111111" style="background-color: #111111; height: 1px; border: none;">
+      <p><font face="Georgia, serif" size="3">Simulate 5 multilingual sessions and verify latency, calibration, and demographic parity KPIs:</font></p>
+      <pre style="font-family: monospace; font-size: 12px; background-color: #F2F2F0; padding: 10px; border: 1px solid #111111;">
+# Windows UTF-8 encoding command
 $env:PYTHONIOENCODING="utf-8"
 
-# Execute mock generator
+# Generate sequential mock dataset
 python project_sanket/scripts/generate_mock_sessions.py
-```
-This generates session directories under `project_sanket/data/sessions/` and compiles the dataset manifest at `project_sanket/data/dataset_manifest.json`.
 
-### 2. Validate Multi-Session KPIs
-Run the validation suite across all generated sessions to assert latency, ECE calibration, demographic parity, and log chaining limits:
-```bash
-python project_sanket/scripts/evaluate_kpis.py --sessions session_001 session_002 session_003 session_004 session_005
-```
-
-**Example Validation Dashboard Output:**
-```
---- SANKET MULTI-SESSION KPI VALIDATION ---
-
-===============================================================================================
-Session ID      | p95 Latency   | ECE Calib  | Demo Parity  | Audit Log  | Status  
------------------------------------------------------------------------------------------------
-session_001     | 72.5ms (PASS) | 0.038 (PASS) | 0.000 (PASS) | PASS       | SUCCESS 
-session_002     | 75.7ms (PASS) | 0.038 (PASS) | 0.000 (PASS) | PASS       | SUCCESS 
-session_003     | 73.9ms (PASS) | 0.038 (PASS) | 0.000 (PASS) | PASS       | SUCCESS 
-session_004     | 74.4ms (PASS) | 0.038 (PASS) | 0.000 (PASS) | PASS       | SUCCESS 
-session_005     | 75.5ms (PASS) | 0.038 (PASS) | 0.000 (PASS) | PASS       | SUCCESS 
-===============================================================================================
-Overall Multi-Session Validation: SUCCESS
-```
-
-### 3. Run Core Verification Tests
-Run the unit test suite inside the backend container:
-```bash
-docker-compose exec backend python -m unittest test/test_kpis.py
-```
-
----
-
-## 🔧 Streamlined CPU Telemetry & Multi-lingual Processing Pipelines
-
-SANKET has been overhauled to support seamless execution on CPU-only edge hardware by decoupling heavy models and offloading speech pipeline workloads:
-
-1. **Streamlined CPU Target Infrastructure**:
-   - Running entirely on CPU-only local workstations by integrating lightweight containerized components (FastAPI backend + Nginx static frontend).
-   - Decoupled heavy local machine ASR inference models by leveraging the browser's native **Web Speech API** for real-time speech-to-text.
-   - Whisper-tiny is configured as a silent, fallback container ASR pipeline to capture audio chunks only when native APIs are restricted.
-
-2. **Multi-lingual Ingestion & Localized ASR**:
-   - Integrates native browser speech diarization targeting **Indian English (en-IN)**.
-   - Provides full ingestion support for **5 target languages** (English, Hindi, Marathi, Tamil, Telugu) selectable via a Demographics interface dropdown.
-   - Enforces language locale mappings that persist in real-time across the tablet dashboard panel elements.
-
-3. **Optimized Physiology & Face Contours Telemetry**:
-   - **rPPG CHROM Filtering (`ppg.py`)**: A pure NumPy and OpenCV-based CHROM rPPG algorithm that processes forehead ROI color pulse variations using a strict bandpass filter tuned to `0.92 - 1.67 Hz` (corresponding to a clean **55 - 100 BPM** physiological heart rate band) to completely filter out ambient light and head-motion artifacts.
-   - **AU4 Brow Furrow Blendshapes (`face_cues.py`)**: Replaced raw face landmark coordinates with MediaPipe's dynamic Face Blendshapes tracking system (`browDownLeft` + `browDownRight`) to natively drive the AU4 Brow Furrow intensity graph.
-
-4. **Shortened Baseline Calibration**:
-   - The trailing physiological baseline calibration window has been shortened down to exactly **60 seconds** to optimize baseline profiling. The UI dynamically clears the "Baseline collection in progress" explainability attributions panel past this 60s active operational window to show a clean dashboard.
-
----
-
-## 💻 Manual Developer Setup (Non-Docker)
-
-### 1. Backend Server Setup
-```bash
-# Install Python packages
-pip install -r project_sanket/backend/requirements.txt
-
-# Start FastAPI (listens on port 8000 locally)
-python -m uvicorn project_sanket.backend.app:app --reload --port 8000
-```
-
-### 2. Frontend React Setup
-```bash
-# Navigate to the frontend directory
-cd project_sanket/frontend
-
-# Install dependencies and start local server (runs on port 3000 locally)
-npm install
-npm start
-```
+# Assert programmatic KPI metrics
+python project_sanket/scripts/evaluate_kpis.py --sessions session_001 session_002 session_003 session_004 session_005</pre>
+    </td>
+  </tr>
+</table>
