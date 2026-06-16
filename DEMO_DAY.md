@@ -75,19 +75,21 @@
 <table width="100%" bgcolor="#FFF5F5" border="2" bordercolor="#CC0000" cellpadding="15" cellspacing="0" style="border: 2px dashed #CC0000; border-collapse: collapse; margin-bottom: 20px;">
   <tr>
     <td style="padding: 20px;">
-      <p style="margin-top: 0;"><font face="Times New Roman, serif" size="4" color="#CC0000"><b>⚠️ LIVE TELEMETRY STREAMING COMMANDS</b></font></p>
-      <p style="margin-bottom: 10px; text-align: justify;"><font face="Georgia, serif" size="3" color="#111111">To feed live data into the evaluation session, open separate terminal windows and execute the mock streaming scripts in the workspace root:</font></p>
-      <pre style="font-family: monospace; font-size: 11px; background-color: #F2F2F0; padding: 12px; border: 1px solid #111111; color: #111111; margin: 0; overflow-x: auto;">
-# Terminal 1: Mock Forehead ROI Video & rPPG Ingestion
-python project_sanket/scripts/mock_video.py --stream-api --session-id evaluation_session_001 --url http://localhost:8001/frame
-
-# Terminal 2: Mock Audio Ingestion (Transcripts & Pitch)
-python project_sanket/scripts/mock_audio.py --stream-api --session-id evaluation_session_001 --url http://localhost:8001/audio</pre>
+      <p style="margin-top: 0; margin-bottom: 0;"><font face="Times New Roman, serif" size="4" color="#CC0000"><b>⚠️ LIVE TELEMETRY STREAMING COMMANDS</b></font></p>
+      <p style="margin-top: 10px; margin-bottom: 0; text-align: justify;"><font face="Georgia, serif" size="3" color="#111111">To feed live data into the evaluation session, open separate terminal windows and execute the mock streaming scripts in the workspace root:</font></p>
     </td>
   </tr>
 </table>
 
-<table width="100%" bgcolor="#F9F9F7" border="1" bordercolor="#111111" cellpadding="15" cellspacing="0" style="border: 1px solid #111111; border-collapse: collapse;">
+```bash
+# Terminal 1: Mock Forehead ROI Video & rPPG Ingestion
+python project_sanket/scripts/mock_video.py --stream-api --session-id evaluation_session_001 --url http://localhost:8001/frame
+
+# Terminal 2: Mock Audio Ingestion (Transcripts & Pitch)
+python project_sanket/scripts/mock_audio.py --stream-api --session-id evaluation_session_001 --url http://localhost:8001/audio
+```
+
+<table width="100%" bgcolor="#F9F9F7" border="1" bordercolor="#111111" cellpadding="15" cellspacing="0" style="border: 1px solid #111111; border-collapse: collapse; margin-bottom: 20px;">
   <tr>
     <td style="padding: 20px;">
       <p style="margin-top: 0;"><font face="Times New Roman, serif" size="5"><b>🛠️ Troubleshooting Stack Crashes</b></font></p>
@@ -99,3 +101,25 @@ python project_sanket/scripts/mock_audio.py --stream-api --session-id evaluation
     </td>
   </tr>
 </table>
+
+<table width="100%" bgcolor="#F9F9F7" border="1" bordercolor="#111111" cellpadding="15" cellspacing="0" style="border: 1px solid #111111; border-collapse: collapse; margin-bottom: 20px;">
+  <tr>
+    <td style="padding: 20px;">
+      <p style="margin-top: 0;"><font face="Times New Roman, serif" size="5"><b>📰 Newsprint HTML Blueprint Reference</b></font></p>
+      <hr size="1" color="#111111" style="background-color: #111111; height: 1px; border: none; margin-bottom: 15px;">
+      <p style="margin-bottom: 0;"><font face="Georgia, serif" size="3">To display consistent layout styling on GitHub without rendering conflicts, the document structure relies on plain &lt;table&gt;, &lt;tr&gt;, &lt;td&gt;, and &lt;hr&gt; elements with explicit inline styles. Use the following blueprint template for custom sections:</font></p>
+    </td>
+  </tr>
+</table>
+
+```html
+<table width="100%" bgcolor="#F9F9F7" border="1" bordercolor="#111111" cellpadding="15" cellspacing="0" style="border: 1px solid #111111; border-collapse: collapse; margin-bottom: 20px;">
+  <tr>
+    <td style="padding: 20px;">
+      <p style="margin-top: 0;"><font face="Times New Roman, serif" size="5"><b>Section Heading</b></font></p>
+      <hr size="1" color="#111111" style="background-color: #111111; height: 1px; border: none; margin-bottom: 15px;">
+      <p style="margin-bottom: 0;"><font face="Georgia, serif" size="3">Your editorial text here.</font></p>
+    </td>
+  </tr>
+</table>
+```

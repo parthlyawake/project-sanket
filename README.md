@@ -77,9 +77,12 @@
 <table width="100%" bgcolor="#F9F9F7" border="1" bordercolor="#111111" cellpadding="15" cellspacing="0" style="border: 1px solid #111111; border-collapse: collapse; margin-bottom: 20px;">
   <tr>
     <td style="padding: 20px;">
-      <p style="margin-top: 0;"><font face="Times New Roman, serif" size="5"><b>🔀 System Logic & Text Routing Flowchart</b></font></p>
-      <hr size="1" color="#111111" style="background-color: #111111; height: 1px; border: none; margin-bottom: 15px;">
-      <pre style="font-family: monospace; font-size: 12px; line-height: 1.4; color: #111111; background-color: #F2F2F0; padding: 15px; border: 1px solid #111111; margin: 0; overflow-x: auto;">
+      <p style="margin-top: 0; margin-bottom: 0;"><font face="Times New Roman, serif" size="5"><b>🔀 System Logic & Text Routing Flowchart</b></font></p>
+    </td>
+  </tr>
+</table>
+
+```text
              [ Incoming Speech Segment ]
                          │
                          ▼
@@ -110,10 +113,7 @@
                                ▼
                    [ XLM-RoBERTa NLI Engine ]
                 (Check Semantic Contradiction)
-      </pre>
-    </td>
-  </tr>
-</table>
+```
 
 <table width="100%" bgcolor="#FFF5F5" border="2" bordercolor="#CC0000" cellpadding="15" cellspacing="0" style="border: 2px dashed #CC0000; border-collapse: collapse; margin-bottom: 20px;">
   <tr>
@@ -129,24 +129,30 @@
     <td style="padding: 20px;">
       <p style="margin-top: 0;"><font face="Times New Roman, serif" size="5"><b>🚀 Quick Start (Docker Compose Detached Mode)</b></font></p>
       <hr size="1" color="#111111" style="background-color: #111111; height: 1px; border: none; margin-bottom: 15px;">
-      <p style="margin-bottom: 10px;"><font face="Georgia, serif" size="3">Run from the root directory to spin up the decoupled stack:</font></p>
-      <pre style="font-family: monospace; font-size: 12px; background-color: #F2F2F0; padding: 12px; border: 1px solid #111111; margin: 0;">
-# Boot the PostgreSQL, MinIO, Nginx static frontend, and FastAPI backend
-docker compose up -d
-
-# Verify container statuses (postgres, minio, backend, frontend)
-docker compose ps</pre>
+      <p style="margin-bottom: 0;"><font face="Georgia, serif" size="3">Run from the root directory to spin up the decoupled stack:</font></p>
     </td>
   </tr>
 </table>
 
-<table width="100%" bgcolor="#F9F9F7" border="1" bordercolor="#111111" cellpadding="15" cellspacing="0" style="border: 1px solid #111111; border-collapse: collapse;">
+```bash
+# Boot the PostgreSQL, MinIO, Nginx static frontend, and FastAPI backend
+docker compose up -d
+
+# Verify container statuses (postgres, minio, backend, frontend)
+docker compose ps
+```
+
+<table width="100%" bgcolor="#F9F9F7" border="1" bordercolor="#111111" cellpadding="15" cellspacing="0" style="border: 1px solid #111111; border-collapse: collapse; margin-bottom: 20px;">
   <tr>
     <td style="padding: 20px;">
       <p style="margin-top: 0;"><font face="Times New Roman, serif" size="5"><b>📊 Dataset Simulation & KPI Validation</b></font></p>
       <hr size="1" color="#111111" style="background-color: #111111; height: 1px; border: none; margin-bottom: 15px;">
-      <p style="margin-bottom: 10px;"><font face="Georgia, serif" size="3">Simulate 5 multilingual sessions and verify latency, calibration, and demographic parity KPIs:</font></p>
-      <pre style="font-family: monospace; font-size: 12px; background-color: #F2F2F0; padding: 12px; border: 1px solid #111111; margin: 0;">
+      <p style="margin-bottom: 0;"><font face="Georgia, serif" size="3">Simulate 5 multilingual sessions and verify latency, calibration, and demographic parity KPIs:</font></p>
+    </td>
+  </tr>
+</table>
+
+```powershell
 # Windows UTF-8 encoding command
 $env:PYTHONIOENCODING="utf-8"
 
@@ -154,7 +160,27 @@ $env:PYTHONIOENCODING="utf-8"
 python project_sanket/scripts/generate_mock_sessions.py
 
 # Assert programmatic KPI metrics
-python project_sanket/scripts/evaluate_kpis.py --sessions session_001 session_002 session_003 session_004 session_005</pre>
+python project_sanket/scripts/evaluate_kpis.py --sessions session_001 session_002 session_003 session_004 session_005
+```
+
+<table width="100%" bgcolor="#F9F9F7" border="1" bordercolor="#111111" cellpadding="15" cellspacing="0" style="border: 1px solid #111111; border-collapse: collapse; margin-bottom: 20px;">
+  <tr>
+    <td style="padding: 20px;">
+      <p style="margin-top: 0;"><font face="Times New Roman, serif" size="5"><b>📰 Newsprint HTML Blueprint Reference</b></font></p>
+      <hr size="1" color="#111111" style="background-color: #111111; height: 1px; border: none; margin-bottom: 15px;">
+      <p style="margin-bottom: 0;"><font face="Georgia, serif" size="3">To display consistent layout styling on GitHub without rendering conflicts, the document structure relies on plain &lt;table&gt;, &lt;tr&gt;, &lt;td&gt;, and &lt;hr&gt; elements with explicit inline styles. Use the following blueprint template for custom sections:</font></p>
     </td>
   </tr>
 </table>
+
+```html
+<table width="100%" bgcolor="#F9F9F7" border="1" bordercolor="#111111" cellpadding="15" cellspacing="0" style="border: 1px solid #111111; border-collapse: collapse; margin-bottom: 20px;">
+  <tr>
+    <td style="padding: 20px;">
+      <p style="margin-top: 0;"><font face="Times New Roman, serif" size="5"><b>Section Heading</b></font></p>
+      <hr size="1" color="#111111" style="background-color: #111111; height: 1px; border: none; margin-bottom: 15px;">
+      <p style="margin-bottom: 0;"><font face="Georgia, serif" size="3">Your editorial text here.</font></p>
+    </td>
+  </tr>
+</table>
+```
