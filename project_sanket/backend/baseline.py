@@ -10,10 +10,9 @@ class BaselineSession:
     Enforces a configurable 3-5 minute silent window (180s - 300s), defaulting to 4 minutes (240s).
     During this period, cue data is gathered but no alerts are generated.
     """
-    def __init__(self, session_id: str, duration_seconds: int = 240):
+    def __init__(self, session_id: str, duration_seconds: int = 60):
         self.session_id = session_id
-        # Enforce configurable baseline window between 3 and 5 minutes (180 to 300 seconds)
-        self.duration_seconds = max(180, min(300, duration_seconds))
+        self.duration_seconds = duration_seconds
         self.start_time = None
         self.samples = {
             "heart_rate": [],
@@ -104,7 +103,7 @@ class BaselineSession:
             "std": std
         }
 
-def get_or_create_baseline(session_id: str, duration_seconds: int = 240) -> BaselineSession:
+def get_or_create_baseline(session_id: str, duration_seconds: int = 60) -> BaselineSession:
     """Retrieves or registers a baseline session manager."""
     if session_id not in _active_baselines:
         _active_baselines[session_id] = BaselineSession(session_id, duration_seconds)

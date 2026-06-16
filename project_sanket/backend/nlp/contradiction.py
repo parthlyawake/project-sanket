@@ -115,7 +115,7 @@ def extract_time_words(text):
     time_pattern = r'\b(morning|afternoon|evening|night|noon|lunch|dinner|breakfast|supper|midnight|today|yesterday|monday|tuesday|wednesday|thursday|friday|saturday|sunday|weekend|january|february|march|april|may|june|july|august|september|october|november|december|last\s+\w+|this\s+\w+|next\s+\w+|\d+\s*(?:am|pm|oclock|o\'clock)|\d+:\d+)\b'
     return set(re.findall(time_pattern, text.lower()))
 
-def detect_contradictions(current_utterance: str, session_id: str, previous_segments: list = None) -> tuple:
+def detect_contradictions(current_utterance: str, session_id: str, previous_segments: list = None, speaker_id: str = 'Subject') -> tuple:
     """
     Compares the current statement against all prior statements in the session.
     Detects semantic contradictions (English/Hindi/Hinglish) using local rule clusters and LaBSE embeddings.
@@ -126,38 +126,68 @@ def detect_contradictions(current_utterance: str, session_id: str, previous_segm
     if not current_utterance or not current_utterance.strip():
         return False, None
 
-    # 1. Load the last 10 real transcripts for the current session from the database
+    # 1. Load the last 10 real transcripts for the current session from the database (Subject only)
     db_segments = []
     try:
         from database import SessionLocal, TranscriptSegmentModel
         db = SessionLocal()
         try:
             prev_rows = db.query(TranscriptSegmentModel).filter(
-                TranscriptSegmentModel.session_id == session_id
+                TranscriptSegmentModel.session_id == session_id,
+                TranscriptSegmentModel.speaker_id == 'Subject'
             ).order_by(TranscriptSegmentModel.timestamp.desc()).limit(10).all()
             
             # Formulate segments list (reversed to be in chronological order)
             db_segments = [
-                {"utterance": row.utterance, "timestamp": row.timestamp.isoformat()}
+                {"utterance": row.utterance, "timestamp": row.timestamp.isoformat(), "speaker_id": row.speaker_id}
                 for row in reversed(prev_rows)
             ]
         finally:
             db.close()
     except Exception as e:
         print(f"Error querying database for contradiction detection: {e}")
-        # Fallback to previous_segments argument if database call fails
-        if previous_segments is not None:
-            db_segments = previous_segments
+        
+    # Fallback to previous_segments if database is empty or query failed
+    if not db_segments and previous_segments is not None:
+        db_segments = [s for s in previous_segments if s.get("speaker_id", "Subject") == "Subject"]
+
+    curr_emb = None
+    if REAL_NLP_AVAILABLE:
+        try:
+            curr_emb = get_sentence_embedding(current_utterance)
+        except Exception as e:
+            print(f"Error computing current utterance embedding: {e}")
+
+    # Echo Filter: pre-filter previous segments where raw similarity > 0.90
+    filtered_db_segments = []
+    for prev in db_segments:
+        prev_text = prev.get("utterance", "")
+        if not prev_text or not prev_text.strip():
+            continue
+        if len(current_utterance.split()) < 5 or len(prev_text.split()) < 5:
+            continue
+            
+        is_echo = False
+        if REAL_NLP_AVAILABLE and curr_emb is not None:
+            try:
+                prev_emb = get_sentence_embedding(prev_text)
+                raw_similarity = compute_cosine_similarity(curr_emb, prev_emb)
+                if raw_similarity > 0.90:
+                    print(f"Echo filter triggered: raw_similarity={raw_similarity:.4f} > 0.90 for '{current_utterance}' vs '{prev_text}'")
+                    is_echo = True
+            except Exception as e:
+                print(f"Error computing similarity for echo check: {e}")
+                
+        if not is_echo:
+            filtered_db_segments.append(prev)
+            
+    db_segments = filtered_db_segments
 
     # 2. Heuristic Negation Check (Fix 2)
     negation_keywords = ["don't have", "never had", "dont have", "do not have"]
     curr_lower = current_utterance.lower()
     for prev in db_segments:
         prev_text = prev.get("utterance", "")
-        if not prev_text:
-            continue
-        if len(current_utterance.split()) < 5 or len(prev_text.split()) < 5:
-            continue
         prev_lower = prev_text.lower()
         
         # Check time references context
@@ -185,51 +215,68 @@ def detect_contradictions(current_utterance: str, session_id: str, previous_segm
     if REAL_NLP_AVAILABLE and db_segments:
         try:
             curr_topic = identify_topic(current_utterance)
-            # Only do same-topic consistency check for specific topics (exclude General Inquiry)
-            if curr_topic != "General Inquiry":
-                curr_emb = get_sentence_embedding(current_utterance)
+            
+            for prev in db_segments:
+                prev_text = prev.get("utterance", "")
                 
-                for prev in db_segments:
-                    prev_text = prev.get("utterance", "")
-                    if not prev_text or prev_text.strip() == "":
-                        continue
-                    if len(current_utterance.split()) < 5 or len(prev_text.split()) < 5:
-                        continue
-                    
-                    # Check time references context
-                    time_words_curr = extract_time_words(current_utterance)
-                    time_words_prev = extract_time_words(prev_text)
-                    if time_words_curr and time_words_prev and not time_words_curr.intersection(time_words_prev):
-                        continue  # different time contexts, not a contradiction
+                # Check time references context
+                time_words_curr = extract_time_words(current_utterance)
+                time_words_prev = extract_time_words(prev_text)
+                if time_words_curr and time_words_prev and not time_words_curr.intersection(time_words_prev):
+                    continue  # different time contexts, not a contradiction
 
-                    prev_topic = identify_topic(prev_text)
-                    if prev_topic == curr_topic:
-                        prev_emb = get_sentence_embedding(prev_text)
-                        raw_similarity = compute_cosine_similarity(curr_emb, prev_emb)
-                        # Scale raw similarity so that 0.76 maps to 0.3
-                        scaled_sim = 10.0 * (raw_similarity - 0.76) + 0.3
-                        print(f"Semantic match check: '{current_utterance}' vs '{prev_text}' -> Raw Cosine Similarity: {raw_similarity:.4f}, Scaled Similarity: {scaled_sim:.4f}")
-                        
-                        # Threshold of 0.7 or lower means low similarity (contradiction in the same topic)
-                        if scaled_sim <= 0.7:  # was 0.3 or 0.5
-                            reason = f"CONTRADICTION DETECTED: Subject said '{current_utterance}' but earlier stated '{prev_text}'"
-                            return True, {
-                                "contradicting_statement": prev_text,
-                                "reasoning": reason,
-                                "confidence": round(1.0 - raw_similarity, 2),
-                                "timestamp": prev.get("timestamp")
-                            }
+                ALONE_WORDS = [
+                    'alone', 'by myself', 'on my own', 'isolated', 'nobody', 'no one',
+                    'अकेला', 'अकेली', 'खुद', 'अकेले',  # Hindi / Marathi
+                    'தனிமையாக', 'தனியாக',              # Tamil
+                    'ఒంటరిగా', 'ఒంటరి'                  # Telugu
+                ]
+                PEOPLE_WORDS = [
+                    'kids', 'children', 'family', 'friends', 'wife', 'husband', 'colleague', 'partner', 'son', 'daughter', 'parent', 'parents',
+                    'बच्चे', 'बच्चों', 'परिवार', 'दोस्त', 'मित्र', 'पत्नी', 'पति', 'घरवाले', # Hindi
+                    'मुले', 'कुटुंब', 'मित्र', 'बायको', 'नवर',                               # Marathi
+                    'குழந்தைகள்', 'குடும்பம்', 'நண்பர்கள்',                                  # Tamil
+                    'పిల్లలు', 'కుటుంబం', 'స్నేహితులు'                                      # Telugu
+                ]
+
+                prev_lower = prev_text.lower()
+                has_alone = any(w in curr_lower for w in ALONE_WORDS) or any(w in prev_lower for w in ALONE_WORDS)
+                has_people = any(w in curr_lower for w in PEOPLE_WORDS) or any(w in prev_lower for w in PEOPLE_WORDS)
+
+                if has_alone and has_people:
+                    reasoning = "Social Context Mismatch: Subject claimed to be alone but explicitly mentioned accompanying individuals."
+                    return True, {
+                        "contradicting_statement": prev_text,
+                        "reasoning": reasoning,
+                        "confidence": 0.95,
+                        "timestamp": prev.get("timestamp")
+                    }
+
+                # Only do same-topic consistency check for specific topics (exclude General Inquiry)
+                prev_topic = identify_topic(prev_text)
+                if curr_topic != "General Inquiry" and prev_topic == curr_topic:
+                    prev_emb = get_sentence_embedding(prev_text)
+                    raw_similarity = compute_cosine_similarity(curr_emb, prev_emb)
+                    # Scale raw similarity so that 0.76 maps to 0.3
+                    scaled_sim = 10.0 * (raw_similarity - 0.76) + 0.3
+                    print(f"Semantic match check: '{current_utterance}' vs '{prev_text}' -> Raw Cosine Similarity: {raw_similarity:.4f}, Scaled Similarity: {scaled_sim:.4f}")
+                    
+                    # Threshold of 0.7 or lower means low similarity (contradiction in the same topic)
+                    if scaled_sim <= 0.7:
+                        reason = f"CONTRADICTION DETECTED: Subject said '{current_utterance}' but earlier stated '{prev_text}'"
+                        return True, {
+                            "contradicting_statement": prev_text,
+                            "reasoning": reason,
+                            "confidence": round(1.0 - raw_similarity, 2),
+                            "timestamp": prev.get("timestamp")
+                        }
         except Exception as e:
             print(f"Real semantic contradiction detection failed: {e}")
 
-    # 3. Heuristic Rules Fallback
-    curr_lower = current_utterance.lower()
+    # Heuristic Rules Fallback
     for prev in db_segments:
-        prev_text = prev.get("utterance", "").lower()
-        if not prev_text:
-            continue
-        if len(current_utterance.split()) < 5 or len(prev_text.split()) < 5:
-            continue
+        prev_text = prev.get("utterance", "")
+        prev_lower = prev_text.lower()
             
         # Check time references context
         time_words_curr = extract_time_words(current_utterance)
@@ -238,12 +285,11 @@ def detect_contradictions(current_utterance: str, session_id: str, previous_segm
             continue  # different time contexts, not a contradiction
 
         for pair in CONTRADICTION_PAIRS:
-            # Check if current statement matches list A and previous matches list B (or vice versa)
             match_a_curr = any(wa in curr_lower for wa in pair["words_a"])
-            match_b_prev = any(wb in prev_text for wb in pair["words_b"])
+            match_b_prev = any(wb in prev_lower for wb in pair["words_b"])
             
             match_b_curr = any(wb in curr_lower for wb in pair["words_b"])
-            match_a_prev = any(wa in prev_text for wa in pair["words_a"])
+            match_a_prev = any(wa in prev_lower for wa in pair["words_a"])
             
             if (match_a_curr and match_b_prev) or (match_b_curr and match_a_prev):
                 details = {
@@ -256,11 +302,36 @@ def detect_contradictions(current_utterance: str, session_id: str, previous_segm
                 
     return False, None
 
-def analyze_linguistics(current_utterance: str, session_id: str, previous_segments: list = None) -> dict:
+def analyze_linguistics(current_utterance: str, session_id: str, previous_segments: list = None, speaker_id: str = 'Subject') -> dict:
     """
     NLP entry point analyzing linguistic consistency and topic categories.
     Logs inference outputs to the tamper-evident hash chain.
     """
+    # 0. Check if speaker is Officer
+    if speaker_id == 'Officer':
+        demo_mode = not REAL_NLP_AVAILABLE
+        print(f"Officer statement bypassed: '{current_utterance}'")
+        log_audit_event(
+            event_type="NLP_LINGUISTIC_ANALYSIS",
+            details={
+                "session_id": session_id,
+                "demo_mode": demo_mode,
+                "topic": "Officer Statement",
+                "is_contradiction": False,
+                "contradiction_details": None,
+                "status": "skipped",
+                "reason": "Officer turn-taking bypass"
+            },
+            model_version="LaBSE" if REAL_NLP_AVAILABLE else "SIMULATION"
+        )
+        return {
+            "demo_mode": demo_mode,
+            "topic": "Officer Statement",
+            "contradiction_flag": False,
+            "contradiction_details": None,
+            "status": "skipped"
+        }
+
     # Query database to check if the session is a live browser session
     is_live = True
     try:
@@ -306,7 +377,7 @@ def analyze_linguistics(current_utterance: str, session_id: str, previous_segmen
 
     # 3. Check for contradictions if not set
     if not is_contradiction:
-        is_contradiction, details = detect_contradictions(current_utterance, session_id, previous_segments)
+        is_contradiction, details = detect_contradictions(current_utterance, session_id, previous_segments, speaker_id)
         
     demo_mode = not REAL_NLP_AVAILABLE
     log_audit_event(

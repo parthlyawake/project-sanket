@@ -267,7 +267,7 @@ def process_audio_transcription_background(wav_bytes: bytes, session_id: str, el
         try:
             prev_rows = db.query(TranscriptSegmentModel).filter(TranscriptSegmentModel.session_id == session_id).all()
             previous_segments = [
-                {"utterance": row.utterance, "timestamp": row.timestamp.isoformat()}
+                {"utterance": row.utterance, "timestamp": row.timestamp.isoformat(), "speaker_id": row.speaker_id}
                 for row in prev_rows
             ]
         except Exception as e:
@@ -276,7 +276,8 @@ def process_audio_transcription_background(wav_bytes: bytes, session_id: str, el
             db.close()
 
         # 4. Run NLP contradiction & topic segmenter
-        nlp_result = analyze_linguistics(transcript, session_id, previous_segments)
+        speaker_id = asr_result.get("speaker_id", "Subject")
+        nlp_result = analyze_linguistics(transcript, session_id, previous_segments, speaker_id)
         
         # 5. Continuous safety monitoring (intoxication trigger)
         audio_safety_payload = {
@@ -547,20 +548,20 @@ async def upload_audio(
         }
     )
 
-def run_text_only_inference(transcript: str, session_id: str, elapsed_seconds: float):
+def run_text_only_inference(transcript: str, session_id: str, elapsed_seconds: float, speaker_id: str = "Subject"):
     try:
         db = SessionLocal()
         previous_segments = []
         try:
             prev_rows = db.query(TranscriptSegmentModel).filter(TranscriptSegmentModel.session_id == session_id).all()
             previous_segments = [
-                {"utterance": row.utterance, "timestamp": row.timestamp.isoformat()}
+                {"utterance": row.utterance, "timestamp": row.timestamp.isoformat(), "speaker_id": row.speaker_id}
                 for row in prev_rows
             ]
         except Exception as e:
             print(f"Error reading prior transcripts in text inference: {e}")
 
-        nlp_result = analyze_linguistics(transcript, session_id, previous_segments)
+        nlp_result = analyze_linguistics(transcript, session_id, previous_segments, speaker_id)
         
         # Continuous safety monitoring (intoxication trigger)
         audio_safety_payload = {
@@ -574,7 +575,7 @@ def run_text_only_inference(transcript: str, session_id: str, elapsed_seconds: f
         segment = TranscriptSegmentModel(
             id=segment_id,
             session_id=session_id,
-            speaker_id='Subject',
+            speaker_id=speaker_id,
             utterance=transcript,
             language='English',
             start_time=elapsed_seconds,
@@ -595,9 +596,10 @@ async def submit_audio_text(request: Request):
     session_id = data.get("session_id")
     transcript = data.get("transcript", "").strip()
     elapsed_seconds = float(data.get("elapsed_seconds", 0))
+    speaker_id = data.get("speaker_id", "Subject")
     if not transcript or len(transcript) < 2:
         return {"status": "skipped"}
-    inference_executor.submit(run_text_only_inference, transcript, session_id, elapsed_seconds)
+    inference_executor.submit(run_text_only_inference, transcript, session_id, elapsed_seconds, speaker_id)
     return {"status": "accepted", "transcript": transcript}
 
 @app.get("/latest-cues/{session_id}")
@@ -826,6 +828,13 @@ def download_session_report(session_id: str, db: Session = Depends(get_db)):
     doc = SimpleDocTemplate(pdf_path, pagesize=letter, rightMargin=36, leftMargin=36, topMargin=105, bottomMargin=75)
     styles = getSampleStyleSheet()
     
+    body_style = ParagraphStyle(
+        'NewsprintBodyText',
+        parent=styles['BodyText'],
+        textColor=colors.HexColor('#111111'),
+        fontName='Helvetica'
+    )
+    
     # Register Noto Sans Devanagari font for Devanagari text support
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
@@ -840,37 +849,47 @@ def download_session_report(session_id: str, db: Session = Depends(get_db)):
             
     devanagari_style = ParagraphStyle(
         'DevanagariBody',
-        parent=styles['BodyText'],
+        parent=body_style,
         fontName='NotoSansDevanagari' if has_devanagari_font else 'Helvetica'
     )
     
     # Page Canvas decorations callback
     def draw_page_decorations(canvas, document):
-        # 1. Dark header bar
+        # Background color: soft off-white HexColor('#F9F9F7')
         canvas.saveState()
-        canvas.setFillColor(colors.HexColor('#0F172A'))
+        canvas.setFillColor(colors.HexColor('#F9F9F7'))
+        canvas.rect(0, 0, 612, 792, fill=1, stroke=0)
+        canvas.restoreState()
+
+        # 1. Stark black header bar
+        canvas.saveState()
+        canvas.setFillColor(colors.HexColor('#111111'))
         canvas.rect(0, 750, 612, 42, fill=1, stroke=0)
         
-        # White bold PROJECT SANKET on left
-        canvas.setFont("Helvetica-Bold", 14)
+        # White bold serif PROJECT SANKET on left (Playfair Display approximation)
+        canvas.setFont("Times-Bold", 14)
         canvas.setFillColor(colors.white)
         canvas.drawString(36, 765, "PROJECT SANKET")
         
-        # Session info and date on right
+        # Session info and date on right (Helvetica)
         date_str = session.start_time.strftime("%d-%m-%Y %H:%M:%S UTC")
         canvas.setFont("Helvetica", 9)
         canvas.drawRightString(576, 765, f"Session: {session_id} | Date: {date_str}")
+        canvas.restoreState()
         
-        # 2. Warning banner
-        canvas.setFillColor(colors.HexColor('#D32F2F'))
+        # 2. Charcoal warning banner
+        canvas.saveState()
+        canvas.setFillColor(colors.HexColor('#222222'))
         canvas.rect(0, 710, 612, 40, fill=1, stroke=0)
-        canvas.setFont("Helvetica-Bold", 10)
+        canvas.setFont("Times-Bold", 10)
         canvas.setFillColor(colors.white)
         canvas.drawCentredString(306, 725, "ASSISTIVE USE ONLY — NOT ADMISSIBLE IN COURT AS EVIDENCE")
+        canvas.restoreState()
         
         # 3. Watermark
-        canvas.setFont("Helvetica-Bold", 40)
-        canvas.setFillColor(colors.HexColor('#EEEEEE')) # light grey (requested #EEEEEE)
+        canvas.saveState()
+        canvas.setFont("Times-Bold", 40)
+        canvas.setFillColor(colors.HexColor('#E5E5E0')) # Muted grey
         canvas.translate(306, 396)
         canvas.rotate(45)
         watermark_text = "DEMO / SIMULATION MODE" if session.demo_mode else "LIVE INFERENCE MODE"
@@ -879,23 +898,23 @@ def download_session_report(session_id: str, db: Session = Depends(get_db)):
         
         # 4. Footer
         canvas.saveState()
-        canvas.setStrokeColor(colors.HexColor('#CBD5E1'))
-        canvas.setLineWidth(0.5)
+        canvas.setStrokeColor(colors.HexColor('#111111')) # Crisp black line
+        canvas.setLineWidth(1.0)
         canvas.line(36, 50, 576, 50)
         
-        # Page number on right, generation timestamp on left
+        # Page number on right, generation timestamp on left (Helvetica)
         canvas.setFont("Helvetica", 8)
-        canvas.setFillColor(colors.HexColor('#64748B'))
+        canvas.setFillColor(colors.HexColor('#525252'))
         canvas.drawString(36, 38, f"Report Generated: {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}")
         canvas.drawRightString(576, 38, f"Page {canvas.getPageNumber()}")
         
-        # Legal disclaimer wrapped
+        # Legal disclaimer wrapped (Helvetica-Oblique)
         disclaimer_style = ParagraphStyle(
             'FooterDisclaimer',
             fontName='Helvetica-Oblique',
             fontSize=6.5,
             leading=8,
-            textColor=colors.HexColor('#64748B'),
+            textColor=colors.HexColor('#525252'),
             alignment=1 # Center
         )
         p_disclaimer = Paragraph(
@@ -912,35 +931,35 @@ def download_session_report(session_id: str, db: Session = Depends(get_db)):
     header_style = ParagraphStyle(
         'WarningHeader',
         parent=styles['Normal'],
-        textColor=colors.HexColor('#D32F2F'), # Red
+        textColor=colors.HexColor('#CC0000'), # Reserved high-contrast dark red for contradictions/warnings
         fontSize=12,
         leading=14,
-        fontName='Helvetica-Bold',
+        fontName='Times-Bold',
         alignment=1 # Centered
     )
     
     title_style = ParagraphStyle(
         'ReportTitle',
         parent=styles['Heading1'],
-        textColor=colors.HexColor('#1A365D'), # Deep Navy
+        textColor=colors.HexColor('#111111'), # Stark black
         fontSize=18,
         leading=22,
+        fontName='Times-Bold', # Times-Bold for serif headers
         alignment=1,
-        spaceBefore=0, # Tightened gap
+        spaceBefore=0,
         spaceAfter=15
     )
     
     section_style = ParagraphStyle(
         'SectionHeading',
         parent=styles['Heading2'],
-        textColor=colors.HexColor('#1A365D'), # Dark Navy
+        textColor=colors.HexColor('#111111'), # Stark black
         fontSize=13,
         leading=16,
+        fontName='Times-Bold', # Times-Bold for serif section headers
         spaceBefore=12,
         spaceAfter=6
     )
-    
-    body_style = styles['BodyText']
     
     story = []
     
@@ -949,20 +968,19 @@ def download_session_report(session_id: str, db: Session = Depends(get_db)):
         story.append(Paragraph(text, section_style))
         t_underline = Table([[""]], colWidths=[540], rowHeights=[1])
         t_underline.setStyle(TableStyle([
-            ('LINEABOVE', (0,0), (-1,-1), 1.0, colors.HexColor('#1A365D')),
+            ('LINEABOVE', (0,0), (-1,-1), 1.0, colors.HexColor('#111111')), # Crisp black divider line
             ('BOTTOMPADDING', (0,0), (-1,-1), 0),
             ('TOPPADDING', (0,0), (-1,-1), 0),
             ('LEFTPADDING', (0,0), (-1,-1), 0),
             ('RIGHTPADDING', (0,0), (-1,-1), 0),
         ]))
         story.append(t_underline)
-        story.append(Spacer(1, 4)) # Tightened gap
+        story.append(Spacer(1, 4))
     
-    # We no longer need to append the header warning flowables here since they are drawn in the template canvas.
     story.append(Paragraph(f"Project SANKET: Investigative Interview Analysis Report", title_style))
     story.append(Spacer(1, 8))
     
-    # 2. Metadata Table (Split execution mode and ECE calibration to separate rows)
+    # 2. Metadata Table
     demo_dict = session.demographics_volunteered or {}
     case_type_val = demo_dict.get("case_type", "N/A")
     lang_val = demo_dict.get("language", "N/A")
@@ -977,14 +995,14 @@ def download_session_report(session_id: str, db: Session = Depends(get_db)):
     ]
     t_meta = Table(metadata_data, colWidths=[110, 150, 110, 150])
     t_meta.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#F8FAFC')),
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#E2E8F0')),
-        ('TEXTCOLOR', (0,0), (0,-1), colors.HexColor('#475569')),
-        ('TEXTCOLOR', (2,0), (2,-1), colors.HexColor('#475569')),
+        ('BACKGROUND', (0,0), (-1,-1), colors.white),
+        ('GRID', (0,0), (-1,-1), 1.0, colors.HexColor('#111111')), # Crisp black border lines
+        ('TEXTCOLOR', (0,0), (-1,-1), colors.HexColor('#111111')),
+        ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
         ('FONTNAME', (0,0), (0,-1), 'Helvetica-Bold'),
         ('FONTNAME', (2,0), (2,-1), 'Helvetica-Bold'),
-        ('SPAN', (1, 4), (3, 4)), # Span execution mode across the remaining columns (row 4)
-        ('SPAN', (1, 5), (3, 5)), # Span ECE calibration across the remaining columns (row 5)
+        ('SPAN', (1, 4), (3, 4)),
+        ('SPAN', (1, 5), (3, 5)),
         ('PADDING', (0,0), (-1,-1), 5),
     ]))
     story.append(t_meta)
@@ -993,21 +1011,45 @@ def download_session_report(session_id: str, db: Session = Depends(get_db)):
     # 3. Topic Segmentation & Behavioral Averages
     add_section_heading("1. Topic-Segmented Behavioral Summary")
     
-    # Segment transcript into topics and compute stats
     topic_data = [["Topic", "Statements", "Avg Heart Rate", "Max Brow Furrow (AU4)", "Contradictions Flagged"]]
     
-    # Analyze topic segments
     topics_list = ["Background & Identification", "Timeline of Events", "Alibi & Location", "Involvement & Relationship", "General Inquiry"]
     for topic in topics_list:
-        stmt_count = sum(1 for t in transcripts if identify_topic(t.utterance) == topic)
-        contra_count = sum(1 for t in transcripts if identify_topic(t.utterance) == topic and t.contradiction_flag)
+        topic_transcripts = [t for t in transcripts if identify_topic(t.utterance) == topic]
+        stmt_count = len(topic_transcripts)
+        contra_count = sum(1 for t in topic_transcripts if t.contradiction_flag)
         
-        # Simulated behavioral averages for topic report
-        avg_hr = 74.0 + random.uniform(-2.0, 5.0) if stmt_count > 0 else 0.0
-        max_au4 = random.uniform(0.1, 0.4) if stmt_count > 0 else 0.0
-        if contra_count > 0:
-            avg_hr += 8.0 # show arousal rise during contradiction
-            max_au4 += 0.3
+        hr_vals = []
+        au4_vals = []
+        if stmt_count > 0:
+            # Match behavioral cues (which have timestamps) to the elapsed time range (+/- 2-second tolerance)
+            intervals = [(t.start_time - 2.0, t.end_time + 2.0) for t in topic_transcripts]
+            for c in cues:
+                elapsed_seconds = (c.timestamp - session.start_time).total_seconds()
+                if any(start <= elapsed_seconds <= end for start, end in intervals):
+                    hr = c.cue_data.get("heart_rate")
+                    if hr is not None:
+                        hr_vals.append(hr)
+                    au4 = c.cue_data.get("action_units", {}).get("AU4")
+                    if au4 is not None:
+                        au4_vals.append(au4)
+                        
+        # Live averages calculation or session-wide averages fallback
+        if len(hr_vals) > 0:
+            avg_hr = float(np.mean(hr_vals))
+        elif stmt_count > 0:
+            session_hr_vals = [c.cue_data.get("heart_rate") for c in cues if c.cue_data.get("heart_rate") is not None]
+            avg_hr = float(np.mean(session_hr_vals)) if session_hr_vals else 72.0
+        else:
+            avg_hr = 0.0
+
+        if len(au4_vals) > 0:
+            max_au4 = float(np.max(au4_vals))
+        elif stmt_count > 0:
+            session_au4_vals = [c.cue_data.get("action_units", {}).get("AU4") for c in cues if c.cue_data.get("action_units", {}).get("AU4") is not None]
+            max_au4 = float(np.max(session_au4_vals)) if session_au4_vals else 0.15
+        else:
+            max_au4 = 0.0
             
         topic_data.append([
             topic,
@@ -1019,20 +1061,25 @@ def download_session_report(session_id: str, db: Session = Depends(get_db)):
         
     t_topics = Table(topic_data, colWidths=[160, 80, 100, 100, 100])
     t_topics_styles = [
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#1A365D')),
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#111111')), # Monochromatic dark header
         ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#CBD5E1')),
+        ('GRID', (0,0), (-1,-1), 1.0, colors.HexColor('#111111')), # Crisp black grid lines
         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
         ('PADDING', (0,0), (-1,-1), 6),
         ('ALIGN', (1,0), (-1,-1), 'CENTER'),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
     ]
     for row_idx in range(1, len(topic_data)):
         c_count = int(topic_data[row_idx][4])
-        if c_count > 0:
-            bg_color = colors.HexColor('#FFEBEE')
-        else:
-            bg_color = colors.HexColor('#F8FAFC') if row_idx % 2 == 1 else colors.white
+        # Alternating background colors in muted grayscale
+        bg_color = colors.HexColor('#E5E5E0') if row_idx % 2 == 1 else colors.white
         t_topics_styles.append(('BACKGROUND', (0, row_idx), (-1, row_idx), bg_color))
+        t_topics_styles.append(('TEXTCOLOR', (0, row_idx), (-1, row_idx), colors.HexColor('#111111')))
+        t_topics_styles.append(('FONTNAME', (0, row_idx), (-1, row_idx), 'Helvetica'))
+        if c_count > 0:
+            # Highlight contradiction count cell with solid dark red text and bold font
+            t_topics_styles.append(('TEXTCOLOR', (4, row_idx), (4, row_idx), colors.HexColor('#CC0000')))
+            t_topics_styles.append(('FONTNAME', (4, row_idx), (4, row_idx), 'Helvetica-Bold'))
         
     t_topics.setStyle(TableStyle(t_topics_styles))
     story.append(t_topics)
@@ -1048,7 +1095,6 @@ def download_session_report(session_id: str, db: Session = Depends(get_db)):
     rendered_keys = set()
     for t in transcripts:
         if t.contradiction_flag:
-            # Deduplicate contradictions in the report
             key = (f"{t.start_time:.1f}", t.speaker_id, t.utterance)
             if key in rendered_keys:
                 continue
@@ -1068,13 +1114,19 @@ def download_session_report(session_id: str, db: Session = Depends(get_db)):
             ])
             
     if not found_contras:
-        contra_list.append(["N/A", "N/A", "No semantic contradictions flagged.", "N/A", "N/A"])
+        contra_list.append([
+            "N/A", 
+            "N/A", 
+            Paragraph("No semantic contradictions flagged.", devanagari_style), 
+            "N/A", 
+            "N/A"
+        ])
         
     t_contra = Table(contra_list, colWidths=[60, 60, 140, 140, 140])
     t_contra_styles = [
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#C62828')), # Dark red header
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#CC0000')), # High-contrast solid dark red header for confirmed contradictions
         ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#EF9A9A')),
+        ('GRID', (0,0), (-1,-1), 1.0, colors.HexColor('#111111')), # Crisp black grid lines
         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
         ('PADDING', (0,0), (-1,-1), 6),
         ('VALIGN', (0,0), (-1,-1), 'TOP'),
@@ -1083,8 +1135,10 @@ def download_session_report(session_id: str, db: Session = Depends(get_db)):
         if not found_contras:
             bg_color = colors.white
         else:
-            bg_color = colors.HexColor('#FFEBEE') if row_idx % 2 == 1 else colors.HexColor('#FFF5F5')
+            bg_color = colors.HexColor('#F9F9F7') if row_idx % 2 == 1 else colors.white
         t_contra_styles.append(('BACKGROUND', (0, row_idx), (-1, row_idx), bg_color))
+        t_contra_styles.append(('TEXTCOLOR', (0, row_idx), (-1, row_idx), colors.HexColor('#111111')))
+        t_contra_styles.append(('FONTNAME', (0, row_idx), (-1, row_idx), 'Helvetica'))
         
     t_contra.setStyle(TableStyle(t_contra_styles))
     story.append(t_contra)
@@ -1095,8 +1149,9 @@ def download_session_report(session_id: str, db: Session = Depends(get_db)):
     story.append(Paragraph("Chained ledger hashes confirming log authenticity and preventing backdated manipulation:", body_style))
     story.append(Spacer(1, 4))
     
-    # Fetch last 5 audit entries for display
-    audit_rows = db.query(AuditLogModel).order_by(AuditLogModel.id.desc()).limit(5).all()
+    # Strictly isolated SQL querying & python filtering by session_id
+    all_audit_rows = db.query(AuditLogModel).order_by(AuditLogModel.id.desc()).all()
+    audit_rows = [r for r in all_audit_rows if isinstance(r.details, dict) and r.details.get("session_id") == session_id][:5]
     audit_list = [["Index/Timestamp", "Event Type", "Input Hash", "Log Signature (First 24 chars)"]]
     
     for idx, r in enumerate(reversed(audit_rows)):
@@ -1109,9 +1164,9 @@ def download_session_report(session_id: str, db: Session = Depends(get_db)):
         
     t_audit = Table(audit_list, colWidths=[100, 120, 140, 180])
     t_audit.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#0F172A')), # Monospace dark terminal block
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#334155')),
-        ('TEXTCOLOR', (0,0), (-1,-1), colors.HexColor('#38BDF8')),
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#111111')), # Stark black
+        ('GRID', (0,0), (-1,-1), 1.0, colors.HexColor('#525252')), # Muted charcoal grid lines
+        ('TEXTCOLOR', (0,0), (-1,-1), colors.HexColor('#F9F9F7')), # Off-white text
         ('FONTNAME', (0,0), (-1,-1), 'Courier-Bold'),
         ('FONTSIZE', (0,0), (-1,-1), 8),
         ('PADDING', (0,0), (-1,-1), 5),
@@ -1138,13 +1193,13 @@ def download_session_report(session_id: str, db: Session = Depends(get_db)):
     ]
     t_bias = Table(bias_data, colWidths=[200, 140, 100, 100])
     t_bias.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#0F172A')),
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#111111')), # Stark black header
         ('TEXTCOLOR', (0,0), (-1,0), colors.white),
         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#CBD5E1')),
+        ('GRID', (0,0), (-1,-1), 1.0, colors.HexColor('#111111')), # Crisp black grid lines
         ('ALIGN', (1,0), (-1,-1), 'CENTER'),
-        ('BACKGROUND', (0,1), (-1,-1), colors.HexColor('#F8FAFC')),
-        ('TEXTCOLOR', (3,1), (3,-1), colors.HexColor('#10B981')), # Green for PASS
+        ('BACKGROUND', (0,1), (-1,-1), colors.white),
+        ('TEXTCOLOR', (3,1), (3,-1), colors.HexColor('#111111')), # Neutral stark black instead of green
         ('FONTNAME', (3,1), (3,-1), 'Helvetica-Bold'),
         ('PADDING', (0,0), (-1,-1), 6),
     ]))
@@ -1172,8 +1227,9 @@ def download_session_report(session_id: str, db: Session = Depends(get_db)):
     ]
     t_calib = Table(calibration_data, colWidths=[180, 360])
     t_calib.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (0,-1), colors.HexColor('#F1F5F9')),
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#CBD5E1')),
+        ('BACKGROUND', (0,0), (0,-1), colors.HexColor('#E5E5E0')), # Soft gray
+        ('BACKGROUND', (1,0), (1,-1), colors.white),
+        ('GRID', (0,0), (-1,-1), 1.0, colors.HexColor('#111111')), # Crisp black grid lines
         ('VALIGN', (0,0), (-1,-1), 'TOP'),
         ('PADDING', (0,0), (-1,-1), 6),
     ]))

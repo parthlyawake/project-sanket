@@ -27,13 +27,14 @@ function App() {
   const [sex, setSex] = useState('');
   const [age, setAge] = useState('');
   const [language, setLanguage] = useState('Hindi');
+  const [selectedLanguage, setSelectedLanguage] = useState('hi-IN'); // Target language code
   
   // Real-Time Session Status (Synced from Backend)
   const [isHalted, setIsHalted] = useState(false);
   const [haltReason, setHaltReason] = useState('');
   const [baselineCompleted, setBaselineCompleted] = useState(false);
   const [baselineElapsed, setBaselineElapsed] = useState(0);
-  const [baselineWindow, setBaselineWindow] = useState(240);
+  const [baselineWindow, setBaselineWindow] = useState(60);
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [latestFusedArousal, setLatestFusedArousal] = useState(0.5);
   const [whyExplanation, setWhyExplanation] = useState('Awaiting baseline data collection...');
@@ -46,6 +47,9 @@ function App() {
   // Media Capture State
   const [isCapturing, setIsCapturing] = useState(false);
   const [webcamAvailable, setWebcamAvailable] = useState(true);
+  
+  // Speaker Turn-Taking state
+  const [activeSpeaker, setActiveSpeaker] = useState('Subject'); // 'Subject' | 'Officer'
   
   // Suggested Questions & Interview Enhancements
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
@@ -76,6 +80,8 @@ function App() {
   const audioChunksRef = useRef([]);
   const recentCuesRef = useRef([]);
   const recognitionRef = useRef(null);
+  const activeSpeakerRef = useRef('Subject'); // Track active speaker to prevent stale closures
+  const localSegmentsRef = useRef([]); // Local cache of sent transcripts with speaker IDs and timestamps
 
   // Interview session elapsed timer
   useEffect(() => {
@@ -168,7 +174,31 @@ function App() {
           setBaselineWindow(data.baseline_window);
           setIsDemoMode(data.demo_mode);
           console.log('status transcripts:', data.transcripts);
-          setTranscripts(data.transcripts);
+          const langMapInverse = { 
+            'en-IN': 'English', 
+            'hi-IN': 'Hindi', 
+            'mr-IN': 'Marathi', 
+            'ta-IN': 'Tamil', 
+            'te-IN': 'Telugu' 
+          };
+          const currentSessionLanguage = langMapInverse[selectedLanguage] || 'English';
+
+          const processedTranscripts = data.transcripts.map(t => {
+            const candidates = localSegmentsRef.current.filter(local => 
+              Math.abs(local.start_time - t.start_time) < 5
+            );
+            let speaker = t.speaker_id;
+            if (candidates.length > 0) {
+              candidates.sort((a, b) => Math.abs(a.start_time - t.start_time) - Math.abs(b.start_time - t.start_time));
+              speaker = candidates[0].speaker_id;
+            }
+            return { 
+              ...t, 
+              speaker_id: speaker || 'Subject',
+              language: currentSessionLanguage 
+            };
+          });
+          setTranscripts(processedTranscripts);
           setLatestFusedArousal(data.latest_fused_arousal);
           setWhyExplanation(data.why_explanation);
           
@@ -291,7 +321,7 @@ function App() {
     const recognition = new window.webkitSpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = 'en-IN';
+    recognition.lang = selectedLanguage;
     
     recognition.onresult = (event) => {
       let finalTranscript = '';
@@ -303,13 +333,19 @@ function App() {
       if (finalTranscript) {
         console.log('Sending final transcript to backend:', finalTranscript);
         const elapsed = (Date.now() - sessionStartTimeRef.current) / 1000.0;
+        localSegmentsRef.current.push({
+          utterance: finalTranscript.trim(),
+          speaker_id: activeSpeakerRef.current,
+          start_time: elapsed
+        });
         fetch(`${API_URL}/audio-text`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
             session_id: sessionId,
             transcript: finalTranscript,
-            elapsed_seconds: elapsed
+            elapsed_seconds: elapsed,
+            speaker_id: activeSpeakerRef.current
           })
         }).catch(err => console.error("Error sending transcript to backend:", err));
       }
@@ -570,37 +606,28 @@ function App() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#070a13' }}>
-      <style>
-        {`
-          @keyframes flash-red {
-            0% { background-color: rgba(239, 68, 68, 0.15); border-color: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
-            50% { background-color: rgba(239, 68, 68, 0.75); border-color: #ffffff; box-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
-            100% { background-color: rgba(239, 68, 68, 0.15); border-color: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
-          }
-          .flashing-contradiction {
-            animation: flash-red 1.5s infinite ease-in-out;
-          }
-        `}
-      </style>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#F9F9F7', color: '#111111', fontFamily: "'Inter', sans-serif" }}>
       
-      {/* PERSISTENT HEADER & LEGAL DISCLAIMER (Rule 3: Non-dismissible watermark on every screen) */}
+      {/* PERSISTENT HEADER & LEGAL DISCLAIMER */}
       <div style={{ 
         position: 'sticky', 
         top: 0, 
         zIndex: 1000, 
-        backgroundColor: '#111827', 
-        borderBottom: '2px solid #ef4444', 
-        boxShadow: '0 4px 10px rgba(0,0,0,0.3)' 
+        backgroundColor: '#FFFFFF', 
+        borderBottom: '4px solid #111111', 
+        boxShadow: 'none' 
       }}>
-        <div style={{ 
-          padding: '8px 12px', 
-          backgroundColor: '#3f0c10', 
+        <div className="cyber-banner" style={{ 
+          padding: '10px 12px', 
+          backgroundColor: '#111111',
+          borderLeft: '4px solid #CC0000',
           textAlign: 'center', 
-          color: '#f87171', 
-          fontWeight: 'bold', 
-          fontSize: '13px', 
-          letterSpacing: '1px' 
+          color: '#FFFFFF', 
+          fontWeight: '700', 
+          fontSize: '12px', 
+          fontFamily: "'Inter', sans-serif",
+          textTransform: 'uppercase',
+          letterSpacing: '2px' 
         }}>
           ⚠️ ASSISTIVE USE ONLY — NOT ADMISSIBLE IN COURT AS EVIDENCE. BEHAVIOR CUES DO NOT CONSTITUTE A CONFESSION.
         </div>
@@ -609,42 +636,44 @@ function App() {
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
-          padding: '12px 24px', 
-          color: '#f8fafc' 
+          padding: '16px 24px', 
+          color: '#111111' 
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <span style={{ fontSize: '20px', fontWeight: 'bold', letterSpacing: '2px', color: '#3b82f6' }}>SANKET</span>
+            <span style={{ fontSize: '32px', fontWeight: '900', fontFamily: "'Playfair Display', serif", letterSpacing: '0.5px', color: '#111111' }}>SANKET</span>
             <span style={{ 
               fontSize: '11px', 
-              padding: '3px 8px', 
-              borderRadius: '4px', 
-              backgroundColor: '#1f2937', 
-              color: '#94a3b8', 
-              border: '1px solid #374151' 
+              padding: '4px 8px', 
+              backgroundColor: '#111111', 
+              color: '#FFFFFF', 
+              fontWeight: 'bold'
             }}>v1.0.0</span>
           </div>
 
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             {/* Status Badges */}
             <span style={{ 
-              fontSize: '12px', 
+              fontSize: '11px', 
               padding: '4px 10px', 
-              borderRadius: '6px', 
-              fontWeight: '500',
-              backgroundColor: consentStatus === 'Granted' ? '#064e3b' : '#7f1d1d',
-              color: consentStatus === 'Granted' ? '#34d399' : '#f87171'
+              fontWeight: '700',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              border: '1px solid #111111',
+              backgroundColor: '#FFFFFF',
+              color: consentStatus === 'Granted' ? '#111111' : '#CC0000'
             }}>
               Consent: {consentStatus}
             </span>
             
             {isDemoMode && (
               <span style={{ 
-                fontSize: '12px', 
+                fontSize: '11px', 
                 padding: '4px 10px', 
-                borderRadius: '6px', 
-                backgroundColor: '#78350f', 
-                color: '#fbbf24', 
-                fontWeight: '600'
+                backgroundColor: '#CC0000', 
+                color: '#FFFFFF', 
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                fontWeight: '700'
               }}>
                 DEMO MODE — Models not loaded
               </span>
@@ -653,7 +682,7 @@ function App() {
             {screen === 'dashboard' && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div className="record-pulse" style={{ width: '10px', height: '10px' }}></div>
-                <span style={{ fontSize: '12px', color: '#94a3b8' }}>Session Live</span>
+                <span style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', color: '#111111' }}>Session Live</span>
               </div>
             )}
           </div>
@@ -665,44 +694,44 @@ function App() {
         
         {/* 1. CONSENT CAPTURE SCREEN */}
         {screen === 'consent' && (
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '650px', padding: '36px' }}>
-            <h2 style={{ color: '#3b82f6', marginTop: 0, borderBottom: '1px solid #1e293b', paddingBottom: '12px' }}>
+          <div className="glass-panel hard-shadow-hover" style={{ width: '100%', maxWidth: '650px', padding: '36px', backgroundColor: '#FFFFFF', border: '1px solid #111111' }}>
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontWeight: '900', fontSize: '28px', color: '#111111', marginTop: 0, borderBottom: '2px solid #111111', paddingBottom: '12px' }}>
               DPDP Act 2023 Consent Verification
             </h2>
-            <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6' }}>
+            <p style={{ color: '#525252', fontFamily: "'Lora', serif", fontSize: '14px', lineHeight: '1.6' }}>
               In compliance with Section 6 of the Digital Personal Data Protection Act, 2023 (DPDP), and Article 21 of the Constitution, informed and explicit consent is required from the Data Principal (interview subject) before capturing audio/video biometric data for analysis.
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', margin: '24px 0' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '6px', fontWeight: 'bold' }}>OFFICER ID</label>
+                <label style={{ display: 'block', fontSize: '11px', fontFamily: "'Inter', sans-serif", letterSpacing: '1px', color: '#111111', marginBottom: '6px', fontWeight: 'bold', textTransform: 'uppercase' }}>OFFICER ID</label>
                 <input 
                   type="text" 
                   value={officerId} 
                   onChange={(e) => setOfficerId(e.target.value)}
-                  style={{ width: '90%', padding: '10px', borderRadius: '6px', border: '1px solid #1e293b', backgroundColor: '#0b0f19', color: '#f8fafc' }}
+                  style={{ width: '90%', padding: '10px', border: '1px solid #111111', backgroundColor: '#FFFFFF', color: '#111111', fontFamily: "'Inter', sans-serif" }}
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '6px', fontWeight: 'bold' }}>LOCATION</label>
+                <label style={{ display: 'block', fontSize: '11px', fontFamily: "'Inter', sans-serif", letterSpacing: '1px', color: '#111111', marginBottom: '6px', fontWeight: 'bold', textTransform: 'uppercase' }}>LOCATION</label>
                 <input 
                   type="text" 
                   value={location} 
                   onChange={(e) => setLocation(e.target.value)}
-                  style={{ width: '90%', padding: '10px', borderRadius: '6px', border: '1px solid #1e293b', backgroundColor: '#0b0f19', color: '#f8fafc' }}
+                  style={{ width: '90%', padding: '10px', border: '1px solid #111111', backgroundColor: '#FFFFFF', color: '#111111', fontFamily: "'Inter', sans-serif" }}
                 />
               </div>
             </div>
 
-            <div className="glass-panel" style={{ padding: '16px', backgroundColor: 'rgba(255,255,255,0.02)', margin: '20px 0' }}>
-              <h4 style={{ margin: '0 0 10px 0', color: '#f59e0b' }}>Volunteered Demographic Attributes (Optional)</h4>
-              <p style={{ fontSize: '12px', color: '#64748b', margin: '0 0 12px 0' }}>Collect demographics only if explicitly volunteered. Do not coerce.</p>
+            <div className="glass-panel" style={{ padding: '16px', backgroundColor: '#F9F9F7', border: '1px solid #111111', margin: '20px 0' }}>
+              <h4 style={{ margin: '0 0 10px 0', fontFamily: "'Playfair Display', serif", fontWeight: '700', color: '#CC0000', textTransform: 'uppercase', fontSize: '14px', letterSpacing: '0.5px' }}>Volunteered Demographic Attributes (Optional)</h4>
+              <p style={{ fontSize: '12px', color: '#525252', margin: '0 0 12px 0' }}>Collect demographics only if explicitly volunteered. Do not coerce.</p>
               
-              <div style={{ display: 'flex', gap: '15px' }}>
+              <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'center' }}>
                 <select 
                   value={sex} 
                   onChange={(e) => setSex(e.target.value)}
-                  style={{ padding: '8px', borderRadius: '4px', backgroundColor: '#0b0f19', color: '#f8fafc', border: '1px solid #1e293b' }}
+                  style={{ padding: '8px', backgroundColor: '#FFFFFF', color: '#111111', border: '1px solid #111111', fontFamily: "'Inter', sans-serif" }}
                 >
                   <option value="">Sex (Not Vol.)</option>
                   <option value="Male">Male</option>
@@ -714,45 +743,57 @@ function App() {
                   placeholder="Age" 
                   value={age} 
                   onChange={(e) => setAge(e.target.value)}
-                  style={{ width: '70px', padding: '8px', borderRadius: '4px', backgroundColor: '#0b0f19', color: '#f8fafc', border: '1px solid #1e293b' }}
+                  style={{ width: '70px', padding: '8px', backgroundColor: '#FFFFFF', color: '#111111', border: '1px solid #111111', fontFamily: "'Inter', sans-serif" }}
                 />
                 
                 <select 
-                  value={language} 
-                  onChange={(e) => setLanguage(e.target.value)}
-                  style={{ padding: '8px', borderRadius: '4px', backgroundColor: '#0b0f19', color: '#f8fafc', border: '1px solid #1e293b' }}
+                  value={selectedLanguage} 
+                  onChange={(e) => {
+                    setSelectedLanguage(e.target.value);
+                    const langMap = {
+                      'en-IN': 'English',
+                      'hi-IN': 'Hindi',
+                      'mr-IN': 'Marathi',
+                      'ta-IN': 'Tamil',
+                      'te-IN': 'Telugu'
+                    };
+                    setLanguage(langMap[e.target.value] || 'Hindi');
+                  }}
+                  style={{ padding: '8px', backgroundColor: '#FFFFFF', color: '#111111', border: '1px solid #111111', fontFamily: "'Inter', sans-serif" }}
                 >
-                  <option value="Hindi">Hindi</option>
-                  <option value="English">English</option>
-                  <option value="Marathi">Marathi</option>
-                  <option value="Tamil">Tamil</option>
+                  <option value="en-IN">English (en-IN)</option>
+                  <option value="hi-IN">Hindi (hi-IN)</option>
+                  <option value="mr-IN">Marathi (mr-IN)</option>
+                  <option value="ta-IN">Tamil (ta-IN)</option>
+                  <option value="te-IN">Telugu (te-IN)</option>
                 </select>
 
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', cursor: 'pointer', color: '#111111', fontWeight: '600' }}>
                   <input 
                     type="checkbox" 
                     checked={isVulnerable} 
                     onChange={(e) => setIsVulnerable(e.target.checked)}
+                    style={{ accentColor: '#111111' }}
                   />
                   Subject is vulnerable (e.g. Minor)
                 </label>
               </div>
             </div>
 
-            <div style={{ border: '1px solid rgba(245, 158, 11, 0.2)', padding: '16px', borderRadius: '8px', backgroundColor: 'rgba(245, 158, 11, 0.05)', fontSize: '13px', color: '#d97706', lineHeight: '1.5' }}>
+            <div style={{ border: '1px solid rgba(204, 0, 0, 0.3)', padding: '16px', backgroundColor: '#FFF5F5', fontSize: '13px', color: '#CC0000', lineHeight: '1.5', fontFamily: "'Lora', serif" }}>
               <b>DPDP Informed Consent Notice:</b> I verify that I have explained to the subject in their preferred language that a real-time behavioral cue assistant is active in this room. The assistant records video and audio to analyze baseline deviations (Heart Rate, Voice Pitch, Facial Muscle Tension) purely as a situational cue for the officer.
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '28px' }}>
               <button 
                 onClick={() => handleConsentSubmit('Denied')}
-                style={{ padding: '12px 24px', borderRadius: '8px', border: '1px solid #ef4444', backgroundColor: 'transparent', color: '#ef4444', cursor: 'pointer', fontWeight: '600' }}
+                className="cyber-btn cyber-btn-magenta"
               >
                 Refuse Consent (Fallback Mode)
               </button>
               <button 
                 onClick={() => handleConsentSubmit('Granted')}
-                style={{ padding: '12px 24px', borderRadius: '8px', border: 'none', backgroundColor: '#3b82f6', color: '#ffffff', cursor: 'pointer', fontWeight: '600' }}
+                className="cyber-btn"
               >
                 Accept & Start Analysis
               </button>
@@ -768,7 +809,7 @@ function App() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: '#0b1329',
+            backgroundColor: '#F9F9F7',
             zIndex: 9999,
             display: 'flex',
             flexDirection: 'column',
@@ -781,29 +822,28 @@ function App() {
               maxWidth: '550px',
               padding: '48px',
               textAlign: 'center',
-              boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
+              backgroundColor: '#FFFFFF',
+              border: '2px solid #111111'
             }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚡</div>
-              <h2 style={{ color: '#3b82f6', marginTop: 0, marginBottom: '16px', fontSize: '24px' }}>
-                Baseline Calibration Active
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</div>
+              <h2 style={{ fontFamily: "'Playfair Display', serif", fontWeight: '900', color: '#111111', marginTop: 0, marginBottom: '16px', fontSize: '28px' }}>
+                BASELINE CALIBRATION
               </h2>
-              <p style={{ color: '#94a3b8', fontSize: '15px', lineHeight: '1.6', marginBottom: '32px' }}>
-                Calibrating baseline profile... Please sit naturally and look at the camera
+              <p style={{ color: '#525252', fontFamily: "'Lora', serif", fontSize: '15px', lineHeight: '1.6', marginBottom: '32px' }}>
+                CALIBRATING BASELINE BIO-METRIC PROFILE... STAND BY.
               </p>
 
               {/* Countdown circle/timer */}
               <div style={{
                 width: '120px',
                 height: '120px',
-                borderRadius: '50%',
-                border: '4px solid #1e293b',
-                borderTopColor: '#3b82f6',
+                border: '4px solid #111111',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                margin: '0 auto 32px auto',
+                margin: '0 auto 32px auto'
               }}>
-                <span style={{ fontSize: '32px', fontWeight: 'bold', color: '#f8fafc', fontFamily: 'monospace' }}>
+                <span style={{ fontSize: '36px', fontWeight: 'bold', color: '#111111', fontFamily: "'JetBrains Mono', monospace" }}>
                   {calibrationCountdown}s
                 </span>
               </div>
@@ -811,22 +851,22 @@ function App() {
               {/* Progress Bar */}
               <div style={{
                 width: '100%',
-                height: '8px',
-                backgroundColor: '#1e293b',
-                borderRadius: '4px',
+                height: '16px',
+                backgroundColor: '#E5E5E0',
                 overflow: 'hidden',
-                marginBottom: '12px'
+                marginBottom: '12px',
+                border: '1px solid #111111'
               }}>
                 <div style={{
                   height: '100%',
                   width: `${((30 - calibrationCountdown) / 30) * 100}%`,
-                  backgroundColor: '#3b82f6',
+                  backgroundColor: '#111111',
                   transition: 'width 1s linear'
                 }}></div>
               </div>
               
-              <div style={{ color: '#64748b', fontSize: '12px', fontWeight: '600' }}>
-                DO NOT FURROW EYEBROWS OR MOVE HEAD EXCESSIVELY
+              <div style={{ color: '#CC0000', fontSize: '12px', fontFamily: "'Inter', sans-serif", fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                WARNING: MINIMIZE SUBJECT MOTION & BROW INVOLVEMENT
               </div>
             </div>
 
@@ -838,10 +878,8 @@ function App() {
               width: '240px',
               height: '180px',
               backgroundColor: '#000000',
-              borderRadius: '12px',
-              border: '2px solid #3b82f6',
+              border: '2px solid #111111',
               overflow: 'hidden',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
               zIndex: 10000
             }}>
               {webcamAvailable ? (
@@ -853,8 +891,8 @@ function App() {
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               ) : (
-                <div style={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#ef4444', fontSize: '12px' }}>
-                  Camera Offline
+                <div style={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#CC0000', fontSize: '12px', fontWeight: 'bold' }}>
+                  CAMERA OFFLINE
                 </div>
               )}
             </div>
@@ -869,102 +907,97 @@ function App() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               
               {/* Camera Preview */}
-              <div className="glass-panel" style={{ padding: '12px', textAlign: 'center' }}>
+              <div className="glass-panel" style={{ padding: '12px', textAlign: 'center', border: '1px solid #111111' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <h4 style={{ margin: 0, color: '#94a3b8', fontSize: '12px', fontWeight: 'bold' }}>WEBCAM STREAM</h4>
-                  <span style={{ color: '#ef4444', fontSize: '12px', fontWeight: 'bold', fontFamily: 'monospace' }}>
+                  <h4 style={{ margin: 0, color: '#111111', fontSize: '12px', fontWeight: 'bold', fontFamily: "'Inter', sans-serif", letterSpacing: '2px' }}>WEBCAM STREAM</h4>
+                  <span style={{ color: '#CC0000', fontSize: '12px', fontWeight: 'bold', fontFamily: "'JetBrains Mono', monospace" }}>
                     ⏱️ {formatTime(sessionElapsedTime)}
                   </span>
                 </div>
-                <div style={{ width: '100%', height: '200px', backgroundColor: '#000000', borderRadius: '8px', overflow: 'hidden', position: 'relative' }}>
+                <div style={{ width: '100%', height: '200px', backgroundColor: '#000000', border: '1px solid #111111', overflow: 'hidden', position: 'relative' }}>
                   {webcamAvailable ? (
                     <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }}></video>
                   ) : (
-                    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: '#ef4444', padding: '16px' }}>
+                    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: '#CC0000', padding: '16px' }}>
                       <span style={{ fontSize: '28px' }}>📷</span>
                       <span style={{ fontSize: '13px', marginTop: '8px', fontWeight: 'bold' }}>CAMERA UNAVAILABLE</span>
-                      <span style={{ fontSize: '11px', color: '#64748b', textAlign: 'center', marginTop: '4px' }}>Webcam or microphone missing/blocked. Please grant device permissions.</span>
+                      <span style={{ fontSize: '11px', color: '#525252', textAlign: 'center', marginTop: '4px' }}>Webcam or microphone missing/blocked. Please grant device permissions.</span>
                     </div>
                   )}
                 </div>
               </div>
 
               {/* Suggested Questions Panel */}
-              <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ margin: '0', color: '#94a3b8', fontSize: '12px', fontWeight: 'bold', textAlign: 'left' }}>SUGGESTED QUESTIONS</h4>
-                <div style={{ padding: '12px', backgroundColor: 'rgba(59, 130, 246, 0.05)', borderRadius: '6px', border: '1px solid rgba(59, 130, 246, 0.2)', textAlign: 'left' }}>
-                  <div style={{ fontSize: '10px', color: '#3b82f6', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '4px' }}>
+              <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px', borderTop: '4px solid #111111' }}>
+                <h4 style={{ margin: '0', color: '#111111', fontSize: '12px', fontWeight: 'bold', textAlign: 'left', fontFamily: "'Inter', sans-serif", letterSpacing: '2px' }}>SUGGESTED QUESTIONS</h4>
+                <div style={{ padding: '12px', backgroundColor: '#F9F9F7', border: '1px solid #111111', textAlign: 'left' }}>
+                  <div style={{ fontSize: '11px', color: '#CC0000', fontWeight: 'bold', textTransform: 'uppercase', fontFamily: "'Inter', sans-serif", letterSpacing: '1px', marginBottom: '4px' }}>
                     Topic: {SUGGESTED_QUESTIONS[currentQuestionIdx].topic}
                   </div>
-                  <div style={{ fontSize: '14px', color: '#f8fafc', minHeight: '40px', lineHeight: '1.4' }}>
+                  <div style={{ fontSize: '16px', color: '#111111', fontFamily: "'Playfair Display', serif", fontStyle: 'italic', minHeight: '40px', lineHeight: '1.4' }}>
                     "{SUGGESTED_QUESTIONS[currentQuestionIdx].question}"
                   </div>
                 </div>
                 <button 
                   onClick={() => setCurrentQuestionIdx((currentQuestionIdx + 1) % SUGGESTED_QUESTIONS.length)}
-                  style={{
-                    padding: '8px 12px',
-                    borderRadius: '6px',
-                    border: 'none',
-                    backgroundColor: '#3b82f6',
-                    color: '#ffffff',
-                    cursor: 'pointer',
-                    fontWeight: 'bold',
-                    fontSize: '12px',
-                    transition: 'background-color 0.2s'
-                  }}
-                  onMouseOver={(e) => e.target.style.backgroundColor = '#2563eb'}
-                  onMouseOut={(e) => e.target.style.backgroundColor = '#3b82f6'}
+                  className="cyber-btn cyber-btn-cyan"
+                  style={{ width: '100%' }}
                 >
                   Next Question
                 </button>
               </div>
 
               {/* Bayesian Late Fusion Dashboard */}
-              <div className="glass-panel" style={{ padding: '20px' }}>
-                <h4 style={{ margin: '0 0 15px 0', color: '#94a3b8', fontSize: '12px', fontWeight: 'bold' }}>FUSED AROUSAL PROBABILITY</h4>
+              <div className="glass-panel" style={{ padding: '20px', borderTop: '4px solid #111111' }}>
+                <h4 style={{ margin: '0 0 15px 0', color: '#111111', fontSize: '11px', fontWeight: 'bold', fontFamily: "'Inter', sans-serif", letterSpacing: '2px' }}>AROUSAL DEVIATION</h4>
                 
-                <div style={{ textAlign: 'center', margin: '20px 0' }}>
-                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: latestFusedArousal >= 0.70 ? '#ef4444' : latestFusedArousal >= 0.50 ? '#f59e0b' : '#10b981' }}>
-                    Arousal Deviation from Baseline: {(latestFusedArousal * 100).toFixed(0)}%
+                <div style={{ textalign: 'center', margin: '20px 0' }}>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', fontFamily: "'Playfair Display', serif", color: '#111111', textAlign: 'center' }}>
+                    {(latestFusedArousal * 100).toFixed(0)}%
                   </div>
                   <div 
                     title="Elevated arousal may reflect nervousness, fatigue, cultural context, or other factors unrelated to deception."
-                    style={{ fontSize: '11px', color: '#64748b', marginTop: '6px', cursor: 'help', textDecoration: 'underline dotted' }}
+                    style={{ fontSize: '11px', color: '#525252', marginTop: '6px', cursor: 'help', textDecoration: 'underline dotted', textAlign: 'center' }}
                   >
                     ℹ️ Context Warning
                   </div>
                 </div>
 
                 {/* Progress Bar */}
-                <div style={{ width: '100%', height: '8px', backgroundColor: '#1e293b', borderRadius: '4px', overflow: 'hidden', marginBottom: '16px' }}>
+                <div style={{ width: '100%', height: '12px', backgroundColor: '#E5E5E0', overflow: 'hidden', border: '1px solid #111111', marginBottom: '16px' }}>
                   <div style={{ 
                     width: `${latestFusedArousal * 100}%`, 
                     height: '100%', 
-                    backgroundColor: latestFusedArousal >= 0.70 ? '#ef4444' : latestFusedArousal >= 0.50 ? '#f59e0b' : '#10b981',
+                    backgroundColor: latestFusedArousal >= 0.70 ? '#CC0000' : '#111111',
                     transition: 'width 0.5s ease'
                   }}></div>
                 </div>
 
-                <div style={{ border: '1px solid rgba(59, 130, 246, 0.15)', borderRadius: '6px', padding: '10px', backgroundColor: 'rgba(59, 130, 246, 0.02)', fontSize: '11px', color: '#94a3b8', lineHeight: '1.4' }}>
-                  <b>Explainability Attributions:</b> {whyExplanation}
-                </div>
+                {whyExplanation && (
+                  (!whyExplanation.includes('Baseline collection') && !whyExplanation.includes('Awaiting baseline')) ||
+                  isCalibrating ||
+                  sessionElapsedTime < 60
+                ) && (
+                  <div style={{ border: '1px solid #111111', padding: '10px', backgroundColor: '#F9F9F7', fontSize: '12px', color: '#111111', lineHeight: '1.4', fontFamily: "'Lora', serif" }}>
+                    <b>Explainability Attributions:</b> {whyExplanation}
+                  </div>
+                )}
               </div>
 
               {/* Baseline window status */}
               <div className="glass-panel" style={{ padding: '15px' }}>
-                <h4 style={{ margin: '0 0 10px 0', color: '#94a3b8', fontSize: '12px', fontWeight: 'bold' }}>BASELINE WINDOW STATUS</h4>
+                <h4 style={{ margin: '0 0 10px 0', color: '#111111', fontSize: '12px', fontWeight: 'bold', fontFamily: "'Inter', sans-serif", letterSpacing: '2px' }}>BASELINE WINDOW STATUS</h4>
                 {baselineCompleted ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#10b981', fontSize: '13px', fontWeight: '500' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#111111', fontSize: '13px', fontWeight: 'bold' }}>
                     <span>✅</span> Baseline Profile Created (Ready)
                   </div>
                 ) : (
                   <div>
-                    <div style={{ fontSize: '13px', color: '#f59e0b', margin: '0 0 6px 0' }}>
+                    <div style={{ fontSize: '13px', color: '#CC0000', margin: '0 0 6px 0', fontWeight: 'bold' }}>
                       ⏳ Gathering Baseline profile: {Math.floor(baselineElapsed)}s / {baselineWindow}s
                     </div>
-                    <div style={{ height: '4px', width: '100%', backgroundColor: '#1e293b', borderRadius: '2px', overflow: 'hidden' }}>
-                      <div style={{ width: `${(baselineElapsed / baselineWindow) * 100}%`, height: '100%', backgroundColor: '#f59e0b' }}></div>
+                    <div style={{ height: '8px', width: '100%', backgroundColor: '#E5E5E0', overflow: 'hidden', border: '1px solid #111111' }}>
+                      <div style={{ width: `${(baselineElapsed / baselineWindow) * 100}%`, height: '100%', backgroundColor: '#111111' }}></div>
                     </div>
                   </div>
                 )}
@@ -973,14 +1006,16 @@ function App() {
               {/* End session control */}
               <button 
                 onClick={handleEndSession}
-                style={{ padding: '14px', borderRadius: '8px', border: 'none', backgroundColor: '#ef4444', color: '#ffffff', cursor: 'pointer', fontWeight: 'bold', letterSpacing: '1px', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)' }}
+                className="cyber-btn cyber-btn-magenta"
+                style={{ width: '100%', padding: '14px', letterSpacing: '1px' }}
               >
                 End Interview & Download Report
               </button>
               {consentStatus === 'Granted' && (
                 <button 
                   onClick={handleWithdrawConsent}
-                  style={{ padding: '8px', borderRadius: '6px', border: '1px solid #ef4444', backgroundColor: 'transparent', color: '#ef4444', cursor: 'pointer', fontSize: '11px', fontWeight: '500' }}
+                  className="cyber-btn cyber-btn-magenta"
+                  style={{ width: '100%', padding: '8px', fontSize: '11px' }}
                 >
                   Withdraw Consent Immediately (DPDP)
                 </button>
@@ -990,26 +1025,45 @@ function App() {
             {/* Right Column: Timeline, Transcripts & Safeguards */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               
-              {/* SAFEGUARD ADVISORY HALT MODAL OVERLAY (Gated, Rule 5) */}
+              {/* Speaker Turn-taking Toggle Button */}
+              <div className="glass-panel" style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#FFFFFF', border: '1px solid #111111' }}>
+                <span style={{ fontSize: '11px', fontWeight: '700', fontFamily: "'Inter', sans-serif", letterSpacing: '1.5px', textTransform: 'uppercase', color: '#111111' }}>
+                  Active Speaker:
+                </span>
+                <button
+                  onClick={() => {
+                    setActiveSpeaker(prev => {
+                      const next = prev === 'Subject' ? 'Officer' : 'Subject';
+                      activeSpeakerRef.current = next;
+                      return next;
+                    });
+                  }}
+                  className={activeSpeaker === 'Subject' ? 'cyber-btn' : 'cyber-btn cyber-btn-magenta'}
+                  style={{ minWidth: '220px', letterSpacing: '1px' }}
+                >
+                  {activeSpeaker === 'Subject' ? '[ Speaking: SUBJECT ]' : '[ Speaking: OFFICER ]'}
+                </button>
+              </div>
+
+              {/* SAFEGUARD ADVISORY HALT MODAL OVERLAY */}
               {isHalted && (
                 <div style={{ 
-                  border: '2px solid #f59e0b', 
-                  borderRadius: '12px', 
+                  border: '2px solid #CC0000', 
                   padding: '20px', 
-                  backgroundColor: 'rgba(245, 158, 11, 0.08)',
-                  boxShadow: '0 0 20px rgba(245,158,11,0.2)'
+                  backgroundColor: '#FFF5F5'
                 }}>
                   <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
                     <span style={{ fontSize: '32px' }}>⚠️</span>
                     <div style={{ flex: 1 }}>
-                      <h4 style={{ margin: '0 0 8px 0', color: '#fbbf24', fontSize: '15px', fontWeight: 'bold' }}>SAFEGUARD TRIGGER HALT</h4>
-                      <p style={{ margin: '0 0 15px 0', fontSize: '13px', color: '#94a3b8', lineHeight: '1.5' }}>
+                      <h4 style={{ margin: '0 0 8px 0', color: '#CC0000', fontSize: '15px', fontWeight: 'bold', fontFamily: "'Inter', sans-serif" }}>SAFEGUARD TRIGGER HALT</h4>
+                      <p style={{ margin: '0 0 15px 0', fontSize: '13px', color: '#111111', fontFamily: "'Lora', serif", lineHeight: '1.5' }}>
                         <b>Procedural Advisory:</b> {haltReason}<br />
                         AI biometric feature inference has been halted on the subject to protect privacy and verify vulnerability protocols.
                       </p>
                       <button 
                         onClick={handleAcknowledgeSafeguard}
-                        style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', backgroundColor: '#f59e0b', color: '#070a13', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                        className="cyber-btn cyber-btn-magenta"
+                        style={{ padding: '8px 16px', fontSize: '12px' }}
                       >
                         Acknowledge & Resume Inference
                       </button>
@@ -1021,18 +1075,17 @@ function App() {
               {/* Contradiction Alert Component */}
               {latestContradiction && (
                 <div 
-                  className="flashing-contradiction" 
                   style={{
-                    border: '2px solid #ef4444',
-                    borderRadius: '8px',
+                    border: '1px solid #111111',
+                    borderLeft: '8px solid #CC0000',
+                    backgroundColor: '#CC0000',
                     padding: '16px',
-                    color: '#ffffff',
-                    fontWeight: 'bold',
+                    color: '#FFFFFF',
                     position: 'relative'
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '14px', color: '#fca5a5', letterSpacing: '1.2px', fontWeight: 'bold' }}>
+                    <span style={{ fontSize: '12px', color: '#FFFFFF', letterSpacing: '2px', fontWeight: 'bold', fontFamily: "'Inter', sans-serif" }}>
                       ⚠️ CONTRADICTION DETECTED
                     </span>
                     <button 
@@ -1040,30 +1093,30 @@ function App() {
                       style={{
                         background: 'transparent',
                         border: 'none',
-                        color: '#ffffff',
+                        color: '#FFFFFF',
                         cursor: 'pointer',
-                        fontSize: '16px',
+                        fontSize: '18px',
                         fontWeight: 'bold'
                       }}
                     >
                       ✕
                     </button>
                   </div>
-                  <div style={{ fontSize: '13px', color: '#ffebee', lineHeight: '1.4', fontWeight: 'normal' }}>
-                    <b>Subject Statement:</b> "{latestContradiction.utterance}"
+                  <div style={{ fontSize: '18px', color: '#FFFFFF', lineHeight: '1.4', fontFamily: "'Playfair Display', serif", fontWeight: '900' }}>
+                    "{latestContradiction.utterance}"
                   </div>
-                  <div style={{ fontSize: '12px', color: '#ffcdd2', marginTop: '6px', fontStyle: 'italic', fontWeight: 'normal' }}>
+                  <div style={{ fontSize: '12px', color: '#FFFFFF', marginTop: '6px', fontFamily: "'Inter', sans-serif", letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.9 }}>
                     <b>Details:</b> {latestContradiction.reasoning}
                   </div>
                 </div>
               )}
 
-              {/* Real-time Cues 60-Second Scrolling Timeline (SVG custom graph) */}
-              <div className="glass-panel" style={{ padding: '20px' }}>
-                <h4 style={{ margin: '0 0 15px 0', color: '#94a3b8', fontSize: '12px', fontWeight: 'bold' }}>60-SECOND SCROLLING TIMELINE LANES</h4>
+              {/* Real-time Cues TIMELINE */}
+              <div className="glass-panel" style={{ padding: '20px', backgroundColor: '#FFFFFF', border: '1px solid #111111' }}>
+                <h4 style={{ margin: '0 0 15px 0', color: '#111111', fontSize: '12px', fontWeight: 'bold', fontFamily: "'Inter', sans-serif", letterSpacing: '2px' }}>60-SECOND SCROLLING TIMELINE LANES</h4>
                 
                 {recentCuesRef.current.length === 0 ? (
-                  <div style={{ height: '240px', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#64748b', fontSize: '13px' }}>
+                  <div style={{ height: '240px', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#525252', fontSize: '13px', fontFamily: "'Lora', serif" }}>
                     Awaiting streaming telemetry (Ingesting video/audio chunks)...
                   </div>
                 ) : (
@@ -1071,7 +1124,7 @@ function App() {
                     
                     {/* Lane 1: Heart Rate */}
                     <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#111111', fontFamily: "'Inter', sans-serif", fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>
                         <span style={{ display: 'flex', alignItems: 'center' }}>
                           💓 Heart Rate (rPPG estimated)
                           {isInferenceRunning && (
@@ -1079,25 +1132,22 @@ function App() {
                               marginLeft: '8px',
                               display: 'inline-block',
                               width: '10px',
-                              height: '10px',
-                              border: '1.5px solid #ef4444',
-                              borderTop: '1.5px solid transparent',
-                              borderRadius: '50%'
+                              height: '10px'
                             }} />
                           )}
                         </span>
-                        <span style={{ color: '#ef4444', fontWeight: 'bold' }}>
+                        <span style={{ color: '#CC0000', fontWeight: 'bold', fontFamily: "'JetBrains Mono', monospace" }}>
                           {(recentCues[recentCues.length-1]?.cue_data?.ppg_cues?.heart_rate ?? recentCues[recentCues.length-1]?.cue_data?.heart_rate ?? 72).toFixed(0)} BPM
                         </span>
                       </div>
-                      <svg width="100%" height="55" style={{ backgroundColor: '#0b1329', borderRadius: '6px', border: '1px solid #1e293b' }}>
-                        <polyline fill="none" stroke="#ef4444" strokeWidth="2.5" points={getTimelinePoints('heart_rate', 50, 120)} />
+                      <svg width="100%" height="55" style={{ backgroundColor: '#FFFFFF', border: '1px solid #111111' }}>
+                        <polyline fill="none" stroke="#CC0000" strokeWidth="2.5" points={getTimelinePoints('heart_rate', 50, 120)} />
                       </svg>
                     </div>
 
-                    {/* Lane 2: Facial AU4 (Brow Furrow) */}
+                    {/* Lane 2: Facial AU4 */}
                     <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#111111', fontFamily: "'Inter', sans-serif", fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>
                         <span style={{ display: 'flex', alignItems: 'center' }}>
                           😠 Face AU4 Intensity (Brow Furrow)
                           {isInferenceRunning && (
@@ -1105,25 +1155,22 @@ function App() {
                               marginLeft: '8px',
                               display: 'inline-block',
                               width: '10px',
-                              height: '10px',
-                              border: '1.5px solid #3b82f6',
-                              borderTop: '1.5px solid transparent',
-                              borderRadius: '50%'
+                              height: '10px'
                             }} />
                           )}
                         </span>
-                        <span style={{ color: '#3b82f6', fontWeight: 'bold' }}>
+                        <span style={{ color: '#111111', fontWeight: 'bold', fontFamily: "'JetBrains Mono', monospace" }}>
                           {(recentCues[recentCues.length-1]?.cue_data?.vision_cues?.action_units?.AU4 ?? recentCues[recentCues.length-1]?.cue_data?.action_units?.AU4 ?? 0.05).toFixed(2)}
                         </span>
                       </div>
-                      <svg width="100%" height="55" style={{ backgroundColor: '#0b1329', borderRadius: '6px', border: '1px solid #1e293b' }}>
-                        <polyline fill="none" stroke="#3b82f6" strokeWidth="2.5" points={getTimelinePoints('AU4', 0.0, 1.0)} />
+                      <svg width="100%" height="55" style={{ backgroundColor: '#FFFFFF', border: '1px solid #111111' }}>
+                        <polyline fill="none" stroke="#111111" strokeWidth="2.5" points={getTimelinePoints('AU4', 0.0, 1.0)} />
                       </svg>
                     </div>
 
                     {/* Lane 3: Gaze Deviation (Yaw) */}
                     <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#111111', fontFamily: "'Inter', sans-serif", fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>
                         <span style={{ display: 'flex', alignItems: 'center' }}>
                           👁️ Gaze Yaw Dev. (Iris deflection)
                           {isInferenceRunning && (
@@ -1131,25 +1178,22 @@ function App() {
                               marginLeft: '8px',
                               display: 'inline-block',
                               width: '10px',
-                              height: '10px',
-                              border: '1.5px solid #a855f7',
-                              borderTop: '1.5px solid transparent',
-                              borderRadius: '50%'
+                              height: '10px'
                             }} />
                           )}
                         </span>
-                        <span style={{ color: '#a855f7', fontWeight: 'bold' }}>
+                        <span style={{ color: '#525252', fontWeight: 'bold', fontFamily: "'JetBrains Mono', monospace" }}>
                           {(recentCues[recentCues.length-1]?.cue_data?.vision_cues?.gaze?.yaw ?? recentCues[recentCues.length-1]?.cue_data?.gaze?.yaw ?? 0.0).toFixed(1)}°
                         </span>
                       </div>
-                      <svg width="100%" height="55" style={{ backgroundColor: '#0b1329', borderRadius: '6px', border: '1px solid #1e293b' }}>
-                        <polyline fill="none" stroke="#a855f7" strokeWidth="2.5" points={getTimelinePoints('gaze_yaw', -15, 15)} />
+                      <svg width="100%" height="55" style={{ backgroundColor: '#FFFFFF', border: '1px solid #111111' }}>
+                        <polyline fill="none" stroke="#525252" strokeWidth="2.5" points={getTimelinePoints('gaze_yaw', -15, 15)} />
                       </svg>
                     </div>
 
                     {/* Lane 4: Posture Shift */}
                     <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#111111', fontFamily: "'Inter', sans-serif", fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>
                         <span style={{ display: 'flex', alignItems: 'center' }}>
                           🕴️ Forward Lean / Upper Body Pose
                           {isInferenceRunning && (
@@ -1157,19 +1201,16 @@ function App() {
                               marginLeft: '8px',
                               display: 'inline-block',
                               width: '10px',
-                              height: '10px',
-                              border: '1.5px solid #10b981',
-                              borderTop: '1.5px solid transparent',
-                              borderRadius: '50%'
+                              height: '10px'
                             }} />
                           )}
                         </span>
-                        <span style={{ color: '#10b981', fontWeight: 'bold' }}>
+                        <span style={{ color: '#A3A3A3', fontWeight: 'bold', fontFamily: "'JetBrains Mono', monospace" }}>
                           {(recentCues[recentCues.length-1]?.cue_data?.vision_cues?.posture?.forward_lean ?? recentCues[recentCues.length-1]?.cue_data?.posture?.forward_lean ?? 0.0).toFixed(2)}
                         </span>
                       </div>
-                      <svg width="100%" height="55" style={{ backgroundColor: '#0b1329', borderRadius: '6px', border: '1px solid #1e293b' }}>
-                        <polyline fill="none" stroke="#10b981" strokeWidth="2.5" points={getTimelinePoints('lean', -1.0, 1.0)} />
+                      <svg width="100%" height="55" style={{ backgroundColor: '#FFFFFF', border: '1px solid #111111' }}>
+                        <polyline fill="none" stroke="#A3A3A3" strokeWidth="2.5" points={getTimelinePoints('lean', -1.0, 1.0)} />
                       </svg>
                     </div>
 
@@ -1178,12 +1219,12 @@ function App() {
               </div>
 
               {/* Transcript & Contradiction Displays */}
-              <div className="glass-panel" style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <h4 style={{ margin: '0 0 12px 0', color: '#94a3b8', fontSize: '12px', fontWeight: 'bold' }}>LIVE TRANSCRIPT (WITH SPEAKER IDS & CONTRADICTIONS)</h4>
+              <div className="glass-panel" style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#FFFFFF', border: '1px solid #111111' }}>
+                <h4 style={{ margin: '0 0 12px 0', color: '#111111', fontSize: '12px', fontWeight: 'bold', fontFamily: "'Inter', sans-serif", letterSpacing: '2px' }}>LIVE TRANSCRIPT (WITH SPEAKER IDS & CONTRADICTIONS)</h4>
                 
-                <div style={{ flex: 1, overflowY: 'auto', maxHeight: '250px', backgroundColor: '#0b0f19', borderRadius: '8px', padding: '12px', border: '1px solid #1e293b' }}>
+                <div style={{ flex: 1, overflowY: 'auto', maxHeight: '250px', backgroundColor: '#FFFFFF', padding: '12px', border: '1px solid #111111' }}>
                   {transcripts.length === 0 ? (
-                    <div style={{ color: '#64748b', fontSize: '13px', textAlign: 'center', marginTop: '40px' }}>
+                    <div style={{ color: '#525252', fontSize: '13px', textAlign: 'center', marginTop: '40px', fontFamily: "'Lora', serif" }}>
                       Awaiting audio stream (Hindi, English, Marathi, Tamil, Telugu transcript will display here)...
                     </div>
                   ) : (
@@ -1202,19 +1243,20 @@ function App() {
                       <div key={idx} style={{ 
                         margin: '0 0 10px 0', 
                         padding: '8px', 
-                        borderRadius: '6px', 
-                        backgroundColor: t.contradiction_flag ? '#3b181a' : 'transparent',
-                        borderLeft: t.contradiction_flag ? '3px solid #ef4444' : 'none'
+                        backgroundColor: t.contradiction_flag ? '#FFF5F5' : (t.speaker_id === 'Officer' ? '#F2F2F0' : 'transparent'),
+                        borderLeft: t.contradiction_flag ? '4px solid #CC0000' : (t.speaker_id === 'Officer' ? '3px solid #525252' : 'none'),
+                        color: '#111111',
+                        fontFamily: "'Lora', serif"
                       }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '2px' }}>
-                          <span style={{ fontWeight: 'bold', color: t.speaker_id === 'Officer' ? '#3b82f6' : '#d97706' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', marginBottom: '2px', fontFamily: "'Inter', sans-serif", letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.8 }}>
+                          <span style={{ fontWeight: 'bold', color: t.contradiction_flag ? '#CC0000' : (t.speaker_id === 'Officer' ? '#CC0000' : '#111111') }}>
                             [{t.speaker_id}] ({t.language})
                           </span>
-                          <span style={{ color: '#64748b' }}>t={t.start_time.toFixed(1)}s</span>
+                          <span style={{ color: '#525252' }}>t={t.start_time.toFixed(1)}s</span>
                         </div>
                         <div style={{ fontSize: '14px', lineHeight: '1.4' }}>{t.utterance}</div>
                         {t.contradiction_flag && (
-                          <div style={{ fontSize: '11px', color: '#fca5a5', marginTop: '4px', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '4px', borderRadius: '3px' }}>
+                          <div style={{ fontSize: '11px', color: '#CC0000', marginTop: '4px', backgroundColor: '#FFF5F5', padding: '4px', border: '1px solid #CC0000' }}>
                             ⚠️ <b>CONTRADICTION:</b> {t.contradiction_details?.reasoning}
                           </div>
                         )}
@@ -1231,9 +1273,9 @@ function App() {
 
         {/* 3. POST-SESSION REPORT VIEWER */}
         {screen === 'report' && (
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '750px', padding: '36px' }}>
-            <h2 style={{ color: '#3b82f6', marginTop: 0, textAlign: 'center' }}>Interview Session Completed</h2>
-            <p style={{ color: '#94a3b8', fontSize: '14px', textAlign: 'center', marginBottom: '30px' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '750px', padding: '36px', backgroundColor: '#FFFFFF', border: '1px solid #111111' }}>
+            <h2 style={{ marginTop: 0, textAlign: 'center', fontFamily: "'Playfair Display', serif", fontWeight: '900', fontSize: '28px' }}>Interview Session Completed</h2>
+            <p style={{ color: '#525252', fontSize: '14px', textAlign: 'center', marginBottom: '30px', fontFamily: "'Lora', serif" }}>
               The cryptographic chain of custody ledger has been closed, and a post-hoc analysis PDF has been generated.
             </p>
 
@@ -1242,43 +1284,39 @@ function App() {
                 href={`${API_URL}/report?session_id=${sessionId}`}
                 target="_blank"
                 rel="noreferrer"
+                className="cyber-btn"
                 style={{ 
-                  textDecoration: 'none', 
-                  padding: '14px 28px', 
-                  borderRadius: '8px', 
-                  backgroundColor: '#3b82f6', 
-                  color: '#ffffff', 
-                  fontWeight: 'bold', 
-                  boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)' 
+                  textDecoration: 'none',
+                  display: 'inline-block'
                 }}
               >
                 📥 DOWNLOAD OFFICIAL PDF REPORT
               </a>
             </div>
 
-            <div style={{ marginTop: '40px', borderTop: '1px solid #1e293b', paddingTop: '20px' }}>
-              <h3 style={{ fontSize: '15px', color: '#f8fafc', marginBottom: '15px' }}>Demographic & Legal Compliance Audit</h3>
+            <div style={{ marginTop: '40px', borderTop: '4px solid #111111', paddingTop: '20px' }}>
+              <h3 style={{ fontSize: '15px', color: '#111111', marginBottom: '15px', fontFamily: "'Inter', sans-serif", letterSpacing: '1px', textTransform: 'uppercase' }}>Demographic & Legal Compliance Audit</h3>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: '#94a3b8' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: '#111111', fontFamily: "'Lora', serif" }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #111111' }}>
                   <span>Article 20(3) Protection:</span>
-                  <span style={{ color: '#10b981' }}>COMPLIANT (Consent-gated analysis only)</span>
+                  <span style={{ color: '#CC0000', fontWeight: 'bold' }}>COMPLIANT (Consent-gated analysis only)</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #111111' }}>
                   <span>Selvi v. Karnataka (2010):</span>
-                  <span style={{ color: '#10b981' }}>COMPLIANT (No coercive deception scoring)</span>
+                  <span style={{ color: '#CC0000', fontWeight: 'bold' }}>COMPLIANT (No coercive deception scoring)</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #111111' }}>
                   <span>DPDP Act 2023 Consent & Erasure:</span>
-                  <span style={{ color: '#10b981' }}>COMPLIANT (Erasure logic & voluntary flags)</span>
+                  <span style={{ color: '#CC0000', fontWeight: 'bold' }}>COMPLIANT (Erasure logic & voluntary flags)</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #111111' }}>
                   <span>BSA 2023 Evidentiary Tagging:</span>
-                  <span style={{ color: '#10b981' }}>COMPLIANT (Watermarked and tagged)</span>
+                  <span style={{ color: '#CC0000', fontWeight: 'bold' }}>COMPLIANT (Watermarked and tagged)</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #111111' }}>
                   <span>Cryptographic Log Chaining:</span>
-                  <span style={{ color: '#10b981' }}>COMPLIANT (Ed25519 hash-chain verified)</span>
+                  <span style={{ color: '#CC0000', fontWeight: 'bold' }}>COMPLIANT (Ed25519 hash-chain verified)</span>
                 </div>
               </div>
             </div>
@@ -1292,10 +1330,11 @@ function App() {
                   setBaselineCompleted(false);
                   setIsHalted(false);
                   recentCuesRef.current = [];
+                  localSegmentsRef.current = [];
                   setRecentCues([]);
                   setTranscripts([]);
                 }}
-                style={{ padding: '10px 20px', borderRadius: '6px', border: '1px solid #374151', backgroundColor: '#1f2937', color: '#94a3b8', cursor: 'pointer' }}
+                className="cyber-btn cyber-btn-cyan"
               >
                 Start New Interview
               </button>
